@@ -1,0 +1,93 @@
+name = "yield-curve"
+version = "2.0.0"
+
+description = "Yield curve bootstrapping and portfolio analysis — a quantitative finance toolkit."
+
+readme = "README.md"
+
+requires-python = ">=3.8"
+
+license = {text = "GPL-3.0-or-later"}
+
+authors = [
+  {name = "Omar Jarir", email = "omar@example.com"},
+]
+
+keywords = [
+  "yield-curve", "bootstrapping", "finance", "quantitative",
+  "portfolio-optimization", "Nelson-Siegel", "spot-rates",
+  "forward-rates", "data-science-portfolio",
+]
+
+classifiers = [
+  "Intended Audience :: Developers",
+  "Intended Audience :: Financial and Insurance Industry",
+  "Topic :: Office/Business :: Financial",
+  "Topic :: Scientific/Engineering :: Mathematics",
+  "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.8",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+]
+
+dependencies = [
+  "numpy>=1.20.0",
+  "scipy>=1.7.0",
+  "pandas>=1.3.0",
+  "matplotlib>=3.4.0",
+  "seaborn>=0.11.0",
+  "numpy-financial>=0.2",
+]
+
+[project.optional-dependencies]
+yfinance = ["yfinance>=0.2.0"]
+dev = [
+  "pytest>=6.0.0",
+  "ruff>=0.1.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/omarja12/Bootstrap-Yield-Curve"
+"Bug Tracker" = "https://github.com/omarja12/Bootstrap-Yield-Curve/issues"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/yield_curve"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py38"
+
+[tool.ruff.lint]
+select = [
+  "E",   # pycodestyle errors
+  "F",   # pyflakes
+  "I",   # isort
+  "N",   # pep8-naming
+  "W",   # pycodestyle warnings
+  "B",   # flake8-bugbear
+  "C4",  # flake8-comprehensions
+]
+ignore = [
+  "E501",  # line too long (handled by formatter)
+]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
+line-ending = "unix"
+
+[tool.ruff.lint.isort]
+known-first-party = ["yield_curve"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+addopts = "-v --tb=short"

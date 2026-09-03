@@ -10,7 +10,7 @@ requires-python = ">=3.8"
 license = {text = "GPL-3.0-or-later"}
 
 authors = [
-  {name = "Omar Jarir", email = "omar@example.com"},
+  {name = "Omar J", email = "jarir.omar@hotmail.fr"},
 ]
 
 keywords = [

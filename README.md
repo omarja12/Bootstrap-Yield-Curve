@@ -1,6 +1,6 @@
 # Bootstrap Yield Curve
 
-A quantitative finance toolkit for **bootstrapping yield curves** from coupon-bearing bonds and **analyzing equity portfolios**, built and maintained by [Omar Jarir](https://github.com/omarja12).
+A quantitative finance toolkit for **bootstrapping yield curves** from coupon-bearing bonds and **analyzing equity portfolios**, built and maintained by [Omar J](https://github.com/omarja12).
 
 - **Package:** `yield_curve` — pure-Python, minimal dependencies, well-tested.
 - **Origin:** a Computational Finance exercise (August 2022), refactored into a maintainable Python package (September 2026).

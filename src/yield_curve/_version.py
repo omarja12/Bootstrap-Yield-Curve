@@ -1,4 +1,7 @@
-"""Dummy module to satisfy hatchling version="attr" — the real version
-is set by hatchling's build hook; this file is never imported at runtime.
+"""Single source of truth for the package version.
+
+Read at build time by hatchling (see `[tool.hatch.version]` in
+pyproject.toml) and re-exported from `yield_curve/__init__.py`.
 """
-__version__ = "2.0.0"
+
+__version__ = "0.1.0"

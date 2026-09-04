@@ -21,8 +21,7 @@
                 "ms-python.vscode-pylance",
                 "ms-toolsai.jupyter",
                 "ms-toolsai.jupyter-keymap",
-                "charliermarsh.ruff",
-                "GitHub.copilot"
+                "charliermarsh.ruff"
             ],
             "settings": {
                 "python.defaultInterpreterPath": "/usr/local/bin/python",

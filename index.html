@@ -7,222 +7,554 @@
 <meta name="description" content="Yield curve bootstrapping from coupon-bearing bonds, Nelson-Siegel fitting, and Markowitz portfolio analysis. A small, tested Python package.">
 <style>
   :root {
-    --bg: #ffffff;
-    --fg: #1a1a1a;
-    --muted: #5c5c5c;
-    --rule: #dcdcdc;
-    --surface: #f6f6f4;
-    --link: #14507a;
+    color-scheme: light;
+    --surface: #fcfcfb;
+    --card: #ffffff;
+    --ink: #0b0b0b;
+    --muted: #52514e;
+    --rule: #e4e4df;
+    --accent: #1a5fb0;
+    --accent-mark: #2a78d6;
+    --shadow: 0 1px 2px rgba(0,0,0,.05), 0 8px 24px -12px rgba(0,0,0,.15);
   }
   @media (prefers-color-scheme: dark) {
     :root {
-      --bg: #16181a;
-      --fg: #e4e4e2;
-      --muted: #9a9a97;
-      --rule: #33363a;
-      --surface: #1e2124;
-      --link: #79b8e8;
+      color-scheme: dark;
+      --surface: #1a1a19;
+      --card: #222221;
+      --ink: #ffffff;
+      --muted: #c3c2b7;
+      --rule: #35352f;
+      --accent: #7fb2ec;
+      --accent-mark: #3987e5;
+      --shadow: 0 1px 2px rgba(0,0,0,.4), 0 8px 24px -12px rgba(0,0,0,.6);
     }
   }
+
   * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
   body {
-    margin: 0 auto;
-    max-width: 46rem;
-    padding: 3rem 1.25rem 5rem;
-    background: var(--bg);
-    color: var(--fg);
-    font-family: Georgia, "Iowan Old Style", "Times New Roman", serif;
-    font-size: 17px;
-    line-height: 1.65;
+    margin: 0;
+    background: var(--surface);
+    color: var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    font-size: 16px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
   }
-  a { color: var(--link); }
-  h1 { font-size: 1.9rem; font-weight: normal; margin: 0 0 .2rem; }
-  h2 {
-    font-size: 1.2rem; font-weight: normal; margin: 2.5rem 0 .6rem;
-    padding-bottom: .3rem; border-bottom: 1px solid var(--rule);
-  }
-  h3 { font-size: 1rem; margin: 1.4rem 0 .3rem; }
-  p, li { margin: .6rem 0; }
-  .lede { color: var(--muted); margin: 0 0 1.5rem; }
-  code, pre {
-    font-family: ui-monospace, "SF Mono", Consolas, "Liberation Mono", monospace;
-    font-size: .85em;
-  }
-  code { background: var(--surface); padding: .1em .35em; border-radius: 3px; }
+  .wrap { max-width: 60rem; margin: 0 auto; padding: 0 1.25rem; }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+
+  code, pre, .mono { font-family: ui-monospace, "SF Mono", "Cascadia Mono", Consolas, "Liberation Mono", monospace; }
+  code { font-size: .875em; background: color-mix(in srgb, var(--ink) 6%, transparent); padding: .12em .38em; border-radius: 4px; }
   pre {
-    background: var(--surface); border: 1px solid var(--rule); border-radius: 4px;
-    padding: .9rem 1rem; overflow-x: auto; line-height: 1.5;
+    background: var(--card); border: 1px solid var(--rule); border-radius: 10px;
+    padding: 1.1rem 1.25rem; overflow-x: auto; font-size: .85rem; line-height: 1.6;
+    box-shadow: var(--shadow);
   }
-  pre code { background: none; padding: 0; }
-  .tablewrap { overflow-x: auto; }
-  table { border-collapse: collapse; width: 100%; font-size: .92rem; margin: .8rem 0; }
-  th, td { text-align: left; padding: .45rem .6rem; border-bottom: 1px solid var(--rule); vertical-align: top; }
-  th { font-weight: bold; }
-  figure { margin: 1.4rem 0; }
-  figure img { width: 100%; border: 1px solid var(--rule); border-radius: 4px; background: #fff; }
-  figcaption { color: var(--muted); font-size: .85rem; margin-top: .4rem; }
+  pre code { background: none; padding: 0; font-size: inherit; }
+  .cm { color: var(--muted); }
+
+  /* ---------- masthead ---------- */
+  header.mast { padding: 4rem 0 2.5rem; border-bottom: 1px solid var(--rule); }
+  .eyebrow {
+    font-size: .75rem; letter-spacing: .09em; text-transform: uppercase;
+    color: var(--muted); font-weight: 600; margin: 0 0 .9rem;
+  }
+  h1 {
+    font-size: clamp(2.1rem, 5.5vw, 3.1rem); line-height: 1.1; letter-spacing: -.025em;
+    font-weight: 640; margin: 0 0 .7rem;
+  }
+  .lede { font-size: clamp(1rem, 2.2vw, 1.16rem); color: var(--muted); margin: 0; max-width: 42rem; }
+  .chips { display: flex; flex-wrap: wrap; gap: .45rem; margin-top: 1.6rem; }
+  .chip {
+    font-size: .78rem; padding: .28rem .7rem; border-radius: 999px;
+    border: 1px solid var(--rule); color: var(--muted); background: var(--card);
+    white-space: nowrap;
+  }
+  .chip b { color: var(--ink); font-weight: 600; }
+
+  /* ---------- nav ---------- */
+  nav.toc {
+    position: sticky; top: 0; z-index: 10;
+    background: color-mix(in srgb, var(--surface) 88%, transparent);
+    backdrop-filter: saturate(180%) blur(10px);
+    border-bottom: 1px solid var(--rule);
+  }
+  nav.toc ul {
+    display: flex; gap: 1.4rem; list-style: none; margin: 0; padding: .8rem 0;
+    overflow-x: auto; font-size: .85rem; scrollbar-width: none;
+  }
+  nav.toc ul::-webkit-scrollbar { display: none; }
+  nav.toc a { color: var(--muted); white-space: nowrap; }
+  nav.toc a:hover { color: var(--ink); text-decoration: none; }
+
+  /* ---------- sections ---------- */
+  section { padding: 3.5rem 0; border-bottom: 1px solid var(--rule); }
+  section:last-of-type { border-bottom: 0; }
+  h2 {
+    font-size: 1.45rem; font-weight: 620; letter-spacing: -.015em; margin: 0 0 .5rem;
+  }
+  h3 { font-size: 1rem; font-weight: 620; margin: 0 0 .35rem; }
+  .sub { color: var(--muted); margin: 0 0 1.8rem; max-width: 44rem; }
+  p { margin: .7rem 0; }
+
+  /* ---------- hero result ---------- */
+  .result {
+    background: var(--card); border: 1px solid var(--rule); border-radius: 14px;
+    padding: 2rem 2rem 1.75rem; box-shadow: var(--shadow);
+    display: grid; grid-template-columns: auto 1fr; gap: 2rem; align-items: center;
+  }
+  .hero-fig {
+    font-size: clamp(2.6rem, 7vw, 3.6rem); font-weight: 640; letter-spacing: -.03em;
+    line-height: 1; color: var(--accent-mark); white-space: nowrap;
+  }
+  .hero-fig sup { font-size: .48em; font-weight: 600; }
+  .hero-label { font-size: .8rem; color: var(--muted); margin-top: .55rem; }
+  .result p { margin: 0; color: var(--muted); font-size: .95rem; }
+  .result p strong { color: var(--ink); font-weight: 600; }
+
+  /* ---------- stat tiles ---------- */
+  .kpis {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px;
+    background: var(--rule); border: 1px solid var(--rule); border-radius: 12px;
+    overflow: hidden; margin-top: 1.25rem;
+  }
+  .kpi { background: var(--card); padding: 1.15rem 1.25rem; }
+  .kpi .label { font-size: .76rem; color: var(--muted); margin-bottom: .3rem; }
+  .kpi .value { font-size: 1.5rem; font-weight: 620; letter-spacing: -.02em; line-height: 1.15; }
+  .kpi .note { font-size: .74rem; color: var(--muted); margin-top: .15rem; }
+
+  /* ---------- cards ---------- */
+  .cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
+  .card {
+    background: var(--card); border: 1px solid var(--rule); border-radius: 12px;
+    padding: 1.35rem; box-shadow: var(--shadow);
+  }
+  .card h3 { font-family: ui-monospace, "SF Mono", Consolas, monospace; font-size: .92rem; color: var(--accent); }
+  .card p { font-size: .89rem; color: var(--muted); margin: .5rem 0 0; }
+
+  /* ---------- figures ---------- */
+  .figs { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; }
+  figure { margin: 0; }
+  figure .frame {
+    background: #fff; border: 1px solid var(--rule); border-radius: 10px;
+    padding: .6rem; box-shadow: var(--shadow); overflow: hidden;
+  }
+  figure img { display: block; width: 100%; height: auto; border-radius: 4px; }
+  figcaption { color: var(--muted); font-size: .82rem; margin-top: .6rem; }
+
+  /* ---------- tables ---------- */
+  .tablewrap { overflow-x: auto; border: 1px solid var(--rule); border-radius: 10px; background: var(--card); }
+  table { border-collapse: collapse; width: 100%; font-size: .87rem; }
+  caption { text-align: left; color: var(--muted); font-size: .82rem; padding: .8rem 1rem 0; }
+  th, td { text-align: left; padding: .55rem .9rem; border-bottom: 1px solid var(--rule); }
+  thead th { font-weight: 600; font-size: .78rem; color: var(--muted); white-space: nowrap; }
+  tbody tr:last-child td { border-bottom: 0; }
+  td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; font-family: ui-monospace, Consolas, monospace; }
+  td.rowhead { font-weight: 600; white-space: nowrap; }
+  .api td:first-child { font-family: ui-monospace, Consolas, monospace; font-size: .85em; white-space: nowrap; }
+
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; align-items: start; }
+
   footer {
-    margin-top: 3.5rem; padding-top: 1rem; border-top: 1px solid var(--rule);
-    color: var(--muted); font-size: .88rem;
+    padding: 2.5rem 0 4rem; color: var(--muted); font-size: .86rem;
+    border-top: 1px solid var(--rule);
+  }
+  footer p { margin: .3rem 0; }
+
+  @media (max-width: 800px) {
+    .cards, .figs, .grid2 { grid-template-columns: 1fr; }
+    .kpis { grid-template-columns: repeat(2, 1fr); }
+    .result { grid-template-columns: 1fr; gap: 1.25rem; }
+    header.mast { padding: 2.75rem 0 2rem; }
+    section { padding: 2.5rem 0; }
   }
 </style>
 </head>
 <body>
 
-<h1>Bootstrap Yield Curve</h1>
-<p class="lede">
-  Bootstrapping yield curves from coupon-bearing bonds, fitting Nelson-Siegel, and running
-  mean-variance portfolio analysis on an equity panel.
-</p>
+<header class="mast">
+  <div class="wrap">
+    <p class="eyebrow">Fixed income · Python</p>
+    <h1>Bootstrap Yield Curve</h1>
+    <p class="lede">
+      Bootstrapping discount factors from coupon-bearing bonds three different ways,
+      fitting a Nelson-Siegel curve, and running mean-variance portfolio analysis on an
+      equity panel.
+    </p>
+    <div class="chips">
+      <span class="chip"><b>17</b> tests passing</span>
+      <span class="chip">Python <b>3.9–3.12</b></span>
+      <span class="chip">No hard dependency on market data</span>
+      <span class="chip"><a href="https://github.com/omarja12/Bootstrap-Yield-Curve">View source →</a></span>
+    </div>
+  </div>
+</header>
 
-<h2>What it does</h2>
-<p>
-  A Python package that builds a yield curve from coupon-bearing bonds using three
-  bootstrapping methods, fits a Nelson-Siegel parametric curve, and runs a mean-variance
-  portfolio analysis on a panel of daily prices. The bootstrapping logic, the forward-rate
-  derivation and the Nelson-Siegel fit are written out rather than imported.
-</p>
+<nav class="toc">
+  <div class="wrap">
+    <ul>
+      <li><a href="#result">Result</a></li>
+      <li><a href="#modules">Modules</a></li>
+      <li><a href="#curve">The curve</a></li>
+      <li><a href="#portfolio">Portfolio</a></li>
+      <li><a href="#usage">Usage</a></li>
+      <li><a href="#api">API</a></li>
+      <li><a href="#run">Run it</a></li>
+    </ul>
+  </div>
+</nav>
 
-<h3><code>YieldCurve</code></h3>
-<p>Discount factors via matrix solve, global solver, or iterative procedure; spot rates, YTM per bond, and 1-year forward rates.</p>
+<main>
 
-<h3><code>NelsonSiegel</code></h3>
-<p>Parametric curve (level, slope, curvature, decay) fitted by least squares to market discount factors. Smooths the jagged bootstrap.</p>
+<section id="result">
+  <div class="wrap">
+    <h2>Three methods, one answer</h2>
+    <p class="sub">
+      The same discount-factor curve is bootstrapped three independent ways — a direct
+      linear solve, a global least-squares optimum, and hand-rolled forward substitution.
+      They are not expected to agree exactly. They do.
+    </p>
 
-<h3><code>PortfolioAnalyzer</code></h3>
-<p>Daily returns, annualized mean, volatility and Sharpe, correlation heatmap, cumulative returns, the Markowitz efficient frontier and the maximum-Sharpe tangency portfolio. Prices come from yfinance or from a DataFrame you supply.</p>
+    <div class="result">
+      <div>
+        <div class="hero-fig">3.3 × 10<sup>−16</sup></div>
+        <div class="hero-label">Max absolute difference, matrix vs. iterative</div>
+      </div>
+      <p>
+        Machine epsilon for a 64-bit float is about <strong>2.2 × 10⁻¹⁶</strong>, so the
+        matrix solve and the iterative procedure agree to within one bit of floating-point
+        representation. The global solver, which stops on a numerical tolerance rather than
+        solving exactly, lands <strong>5.8 × 10⁻⁹</strong> away — the expected signature of
+        an optimizer converging rather than a closed form being evaluated.
+      </p>
+    </div>
 
-<figure>
-  <img src="docs/images/yield_curve_overview.png" alt="Spot rates, yield to maturity and 1-year forward rates plotted against maturity for a ten-bond Treasury curve.">
-  <figcaption>Spot, YTM and forward rates bootstrapped from ten Treasury bonds.</figcaption>
-</figure>
+    <div class="kpis">
+      <div class="kpi">
+        <div class="label">Bonds in the curve</div>
+        <div class="value">10</div>
+        <div class="note">1y through 10y, par 100</div>
+      </div>
+      <div class="kpi">
+        <div class="label">Bootstrap methods</div>
+        <div class="value">3</div>
+        <div class="note">Matrix · solver · iterative</div>
+      </div>
+      <div class="kpi">
+        <div class="label">Nelson-Siegel decay τ</div>
+        <div class="value">2.011</div>
+        <div class="note">Fitted by least squares</div>
+      </div>
+      <div class="kpi">
+        <div class="label">Daily observations</div>
+        <div class="value">1,929</div>
+        <div class="note">Five tickers, 2019–2026</div>
+      </div>
+    </div>
+  </div>
+</section>
 
-<h2>Quick example</h2>
+<section id="modules">
+  <div class="wrap">
+    <h2>What's in the package</h2>
+    <p class="sub">
+      The bootstrapping logic, the forward-rate derivation and the Nelson-Siegel fit are
+      written out rather than imported from a curve library.
+    </p>
+    <div class="cards">
+      <div class="card">
+        <h3>YieldCurve</h3>
+        <p>
+          Builds the cash-flow matrix from (maturity, price, coupon) and bootstraps discount
+          factors three ways. Derives spot rates, yield to maturity per bond, and 1-year
+          forward rates.
+        </p>
+      </div>
+      <div class="card">
+        <h3>NelsonSiegel</h3>
+        <p>
+          The parametric curve central banks and dealers actually use — level, slope,
+          curvature and decay — fitted by least squares to the bootstrapped discount
+          factors to smooth the jagged result.
+        </p>
+      </div>
+      <div class="card">
+        <h3>PortfolioAnalyzer</h3>
+        <p>
+          Returns, volatility and Sharpe from a daily price panel, plus the Markowitz
+          efficient frontier and the maximum-Sharpe tangency portfolio. Risk-free rate can
+          come straight off the bootstrapped curve.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="curve">
+  <div class="wrap">
+    <h2>The curve</h2>
+    <p class="sub">
+      Bootstrapped from ten Treasury bonds, then smoothed. The curve is humped and inverts
+      after year 2 — the forward curve falls from 5.21% to 2.08%.
+    </p>
+
+    <div class="figs">
+      <figure>
+        <div class="frame">
+          <img src="docs/images/yield_curve_overview.png" width="1508" height="827" loading="lazy"
+               alt="Line chart of spot rates, yield to maturity and one-year forward rates against maturity from 1 to 10 years. Spot and YTM peak near 5.14% at year 2 then decline to about 3.9%. The forward curve starts highest at 5.21% and falls steeply to 2.08%.">
+        </div>
+        <figcaption>Spot, YTM and forward rates from the bootstrapped discount factors.</figcaption>
+      </figure>
+      <figure>
+        <div class="frame">
+          <img src="docs/images/nelson_siegel_fit.png" width="1289" height="827" loading="lazy"
+               alt="Chart comparing bootstrapped market discount factors against the fitted Nelson-Siegel curve across maturities 1 to 10 years; the fitted curve passes close to every market point.">
+        </div>
+        <figcaption>Nelson-Siegel fit against the bootstrapped discount factors.</figcaption>
+      </figure>
+    </div>
+
+    <div class="tablewrap" style="margin-top:1.5rem">
+      <table>
+        <caption>Rates derived from the bootstrapped curve, in percent.</caption>
+        <thead>
+          <tr>
+            <th>Maturity</th>
+            <th class="num">1y</th><th class="num">2y</th><th class="num">3y</th>
+            <th class="num">4y</th><th class="num">5y</th><th class="num">6y</th>
+            <th class="num">7y</th><th class="num">8y</th><th class="num">9y</th>
+            <th class="num">10y</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="rowhead">Spot</td>
+            <td class="num">5.07</td><td class="num">5.14</td><td class="num">5.11</td>
+            <td class="num">5.00</td><td class="num">4.85</td><td class="num">4.67</td>
+            <td class="num">4.47</td><td class="num">4.27</td><td class="num">4.07</td>
+            <td class="num">3.87</td>
+          </tr>
+          <tr>
+            <td class="rowhead">YTM</td>
+            <td class="num">5.07</td><td class="num">5.14</td><td class="num">5.11</td>
+            <td class="num">5.00</td><td class="num">4.86</td><td class="num">4.69</td>
+            <td class="num">4.51</td><td class="num">4.33</td><td class="num">4.15</td>
+            <td class="num">3.98</td>
+          </tr>
+          <tr>
+            <td class="rowhead">1y forward</td>
+            <td class="num">5.21</td><td class="num">5.04</td><td class="num">4.68</td>
+            <td class="num">4.26</td><td class="num">3.78</td><td class="num">3.30</td>
+            <td class="num">2.87</td><td class="num">2.45</td><td class="num">2.08</td>
+            <td class="num">—</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<section id="portfolio">
+  <div class="wrap">
+    <h2>Portfolio side</h2>
+    <p class="sub">
+      The 1-year spot rate off the curve (5.07%) becomes the risk-free rate for a
+      mean-variance analysis of five large-cap tech names over 1,929 trading days.
+    </p>
+
+    <div class="figs">
+      <figure>
+        <div class="frame">
+          <img src="docs/images/efficient_frontier.png" width="1270" height="827" loading="lazy"
+               alt="Markowitz efficient frontier plotted as annualized return against annualized volatility, with AAPL, AMZN, GOOG, IBM and MSFT scattered as individual points and the maximum-Sharpe portfolio marked in red on the frontier.">
+        </div>
+        <figcaption>Efficient frontier with the maximum-Sharpe portfolio marked.</figcaption>
+      </figure>
+      <figure>
+        <div class="frame">
+          <img src="docs/images/cumulative_returns.png" width="1489" height="769" loading="lazy"
+               alt="Cumulative returns for five tech stocks from January 2019 to September 2026, all trending upward with AAPL highest.">
+        </div>
+        <figcaption>Cumulative returns across the sample period.</figcaption>
+      </figure>
+    </div>
+
+    <div class="grid2" style="margin-top:1.5rem">
+      <div class="tablewrap">
+        <table>
+          <caption>Maximum-Sharpe tangency portfolio.</caption>
+          <thead><tr><th>Asset</th><th class="num">Weight</th></tr></thead>
+          <tbody>
+            <tr><td class="rowhead">AAPL</td><td class="num">54.73%</td></tr>
+            <tr><td class="rowhead">GOOG</td><td class="num">28.33%</td></tr>
+            <tr><td class="rowhead">IBM</td><td class="num">10.34%</td></tr>
+            <tr><td class="rowhead">MSFT</td><td class="num">6.60%</td></tr>
+            <tr><td class="rowhead">AMZN</td><td class="num">0.00%</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="tablewrap">
+        <table>
+          <caption>Portfolio characteristics, annualized.</caption>
+          <thead><tr><th>Measure</th><th class="num">Value</th></tr></thead>
+          <tbody>
+            <tr><td class="rowhead">Expected return</td><td class="num">30.15%</td></tr>
+            <tr><td class="rowhead">Volatility</td><td class="num">25.81%</td></tr>
+            <tr><td class="rowhead">Sharpe ratio</td><td class="num">0.972</td></tr>
+            <tr><td class="rowhead">Risk-free rate</td><td class="num">5.07%</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <p style="color:var(--muted); font-size:.86rem; margin-top:1.2rem">
+      Prices come from yfinance. If that fetch fails, the analysis falls back to a simulated
+      panel — that path uses neutral asset names and marks every chart
+      <em>(synthetic sample data)</em>, so simulated output is never presented as market data.
+    </p>
+  </div>
+</section>
+
+<section id="usage">
+  <div class="wrap">
+    <h2>Usage</h2>
+    <p class="sub">The package takes an <code>(n, 3)</code> array and hands back rates.</p>
 <pre><code>from yield_curve import YieldCurve, NelsonSiegel
 
-# 10 Treasury bonds: (maturity_years, price, coupon_rate)
+<span class="cm"># 10 Treasury bonds: (maturity_years, price, coupon_rate)</span>
 bonds = np.array([
     [1, 96.60, 0.0150],
     [2, 93.71, 0.0175],
     [3, 91.56, 0.0200],
-    # ... up to 10-year
+    <span class="cm"># ... up to 10-year</span>
 ], dtype=float)
 
 yc = YieldCurve(bonds)
 
-# Three methods — they all agree
+<span class="cm"># Three methods — they all agree</span>
 df_matrix = yc.discount_factors('Matrix operations')
 df_solver = yc.discount_factors('Global Solver')
 df_iter   = yc.discount_factors('Iterative Procedure')
 
-# Derived rates
-spot  = yc.spot_rates()          # annual-compounded spot curve
-ytm   = yc.bonds_ytm()           # yield to maturity per bond
-fwd   = yc.forward_rates()       # 1-year forward rates
+<span class="cm"># Derived rates</span>
+spot  = yc.spot_rates()          <span class="cm"># annual-compounded spot curve</span>
+ytm   = yc.bonds_ytm()           <span class="cm"># yield to maturity per bond</span>
+fwd   = yc.forward_rates()       <span class="cm"># 1-year forward rates</span>
 
-# Nelson-Siegel smooth fit
+<span class="cm"># Nelson-Siegel smooth fit</span>
 ns = NelsonSiegel(bonds[:, 0].astype(float), df_matrix)
 ns.fit()
-print(f'beta0={ns.params[0]:.4f}, beta1={ns.params[1]:.4f}, tau={ns.params[3]:.3f}')</code></pre>
+print(f'beta0={ns.params[0]:.4f}, tau={ns.params[3]:.3f}')</code></pre>
+  </div>
+</section>
 
-<figure>
-  <img src="docs/images/efficient_frontier.png" alt="Markowitz efficient frontier with individual assets scattered by volatility and return, and the maximum-Sharpe portfolio marked.">
-  <figcaption>Efficient frontier and maximum-Sharpe portfolio over five large-cap tech stocks.</figcaption>
-</figure>
+<section id="api">
+  <div class="wrap">
+    <h2>API reference</h2>
+    <p class="sub">Three classes, no framework.</p>
 
-<h2>API reference</h2>
+    <h3 style="margin-top:1.5rem"><code>YieldCurve(bonds)</code></h3>
+    <p style="color:var(--muted); font-size:.9rem; margin-top:.2rem">
+      <code>bonds</code>: <code>np.ndarray</code> of shape <code>(n, 3)</code> — maturity in
+      years, dirty price, coupon rate. Face value 100.
+    </p>
+    <div class="tablewrap">
+      <table class="api">
+        <thead><tr><th>Method</th><th>Returns</th></tr></thead>
+        <tbody>
+          <tr><td>discount_factors(method)</td><td><code>ndarray (n,)</code> — <code>'Matrix operations'</code>, <code>'Global Solver'</code> or <code>'Iterative Procedure'</code></td></tr>
+          <tr><td>spot_rates()</td><td><code>ndarray (n,)</code> — annual-compounded spot rates</td></tr>
+          <tr><td>bonds_ytm()</td><td><code>ndarray (n,)</code> — yield to maturity per bond</td></tr>
+          <tr><td>forward_rates()</td><td><code>ndarray (n−1,)</code> — 1-year forward rates</td></tr>
+          <tr><td>plot_rates(title, save_path)</td><td><code>plt.Figure</code> — spot, YTM and forward on one chart</td></tr>
+        </tbody>
+      </table>
+    </div>
 
-<h3><code>YieldCurve(bonds)</code></h3>
-<p><code>bonds</code>: <code>np.ndarray</code>, shape <code>(n, 3)</code>, columns = (maturity_years, dirty_price, coupon_rate). Face value = 100.</p>
-<div class="tablewrap">
-  <table>
-    <thead><tr><th>Method</th><th>Returns</th></tr></thead>
-    <tbody>
-      <tr><td><code>discount_factors(method)</code></td><td><code>np.ndarray (n,)</code> — 'Matrix operations' / 'Global Solver' / 'Iterative Procedure'</td></tr>
-      <tr><td><code>spot_rates()</code></td><td><code>np.ndarray (n,)</code> — annual-compounded spot rates</td></tr>
-      <tr><td><code>bonds_ytm()</code></td><td><code>np.ndarray (n,)</code> — YTM per bond</td></tr>
-      <tr><td><code>forward_rates()</code></td><td><code>np.ndarray (n-1,)</code> — 1-year forward rates</td></tr>
-      <tr><td><code>plot_rates(title, save_path)</code></td><td><code>plt.Figure</code> — spot + YTM + forward on one chart</td></tr>
-    </tbody>
-  </table>
-</div>
+    <h3 style="margin-top:2rem"><code>NelsonSiegel(maturities, discount_factors)</code></h3>
+    <p style="color:var(--muted); font-size:.9rem; margin-top:.2rem">
+      Fits <code>f(t) = β₀ + β₁·e<sup>−t/τ</sup> + β₂·(t/τ)·e<sup>−t/τ</sup></code> by least squares.
+    </p>
+    <div class="tablewrap">
+      <table class="api">
+        <thead><tr><th>Method</th><th>Returns</th></tr></thead>
+        <tbody>
+          <tr><td>fit()</td><td><code>self</code> — solves for β₀, β₁, β₂, τ</td></tr>
+          <tr><td>fitted_discount_factors()</td><td><code>ndarray</code> — model DF over the input maturities</td></tr>
+          <tr><td>plot(market_df, save_path)</td><td><code>plt.Figure</code> — market vs fitted</td></tr>
+        </tbody>
+      </table>
+    </div>
 
-<h3><code>NelsonSiegel(maturities, discount_factors)</code></h3>
-<p>Fit a parametric curve <code>f(t) = β₀ + β₁·e⁻ᵗ/ᵗ + β₂·(t/τ)·e⁻ᵗ/ᵗ</code> to market discount factors by least squares.</p>
-<div class="tablewrap">
-  <table>
-    <thead><tr><th>Method</th><th>Returns</th></tr></thead>
-    <tbody>
-      <tr><td><code>fit()</code></td><td>self — solves for β₀, β₁, β₂, τ</td></tr>
-      <tr><td><code>fitted_discount_factors()</code></td><td><code>np.ndarray</code> — model DF over the input maturities</td></tr>
-      <tr><td><code>plot(market_df, save_path)</code></td><td><code>plt.Figure</code> — market vs fitted DF</td></tr>
-    </tbody>
-  </table>
-</div>
+    <h3 style="margin-top:2rem"><code>PortfolioAnalyzer(prices, risk_free_rate=0.0)</code></h3>
+    <p style="color:var(--muted); font-size:.9rem; margin-top:.2rem">
+      <code>prices</code>: <code>pd.DataFrame</code> — columns are tickers, index is dates.
+    </p>
+    <div class="tablewrap">
+      <table class="api">
+        <thead><tr><th>Method</th><th>Returns</th></tr></thead>
+        <tbody>
+          <tr><td>efficient_frontier(n_points)</td><td><code>DataFrame</code> — volatility, return, sharpe, weights</td></tr>
+          <tr><td>max_sharpe_portfolio()</td><td><code>dict</code> — weights, volatility, return, sharpe</td></tr>
+          <tr><td>correlation_heatmap(title, save_path)</td><td><code>plt.Figure</code> — correlation of daily returns</td></tr>
+          <tr><td>cumulative_returns_plot(title, save_path)</td><td><code>plt.Figure</code> — cumulative returns per asset</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
 
-<h3><code>PortfolioAnalyzer(prices, risk_free_rate=0.0)</code></h3>
-<p><code>prices</code>: <code>pd.DataFrame</code>, columns = tickers, index = dates (daily close prices).</p>
-<div class="tablewrap">
-  <table>
-    <thead><tr><th>Method</th><th>Returns</th></tr></thead>
-    <tbody>
-      <tr><td><code>efficient_frontier(n_points)</code></td><td><code>pd.DataFrame</code> — columns: volatility, return, sharpe, weights</td></tr>
-      <tr><td><code>max_sharpe_portfolio()</code></td><td><code>dict</code> — weights, volatility, return, sharpe</td></tr>
-      <tr><td><code>correlation_heatmap(title, save_path)</code></td><td><code>plt.Figure</code> — correlation matrix of daily returns</td></tr>
-      <tr><td><code>cumulative_returns_plot(title, save_path)</code></td><td><code>plt.Figure</code> — cumulative returns per asset</td></tr>
-    </tbody>
-  </table>
-</div>
-
-<h2>Repo layout</h2>
-<div class="tablewrap">
-  <table>
-    <thead><tr><th>Path</th><th>What</th></tr></thead>
-    <tbody>
-      <tr><td><code>Bootstrapping_Yield_Curve.ipynb</code></td><td>The original Computational Finance notebook</td></tr>
-      <tr><td><code>notebooks/Yield_Curve_And_Portfolio_Analysis.ipynb</code></td><td>Walkthrough of the package API</td></tr>
-      <tr><td><code>notebooks/run_analysis.py</code></td><td>The same analysis, headless</td></tr>
-      <tr><td><code>src/yield_curve/bootstrap.py</code></td><td>Core: bootstrapping + Nelson-Siegel</td></tr>
-      <tr><td><code>src/yield_curve/portfolio.py</code></td><td><code>PortfolioAnalyzer</code> + yfinance helper</td></tr>
-      <tr><td><code>tests/test_bootstrap.py</code></td><td>Pytest suite — construction, DF agreement, spot/YTM/forward, NS fit</td></tr>
-      <tr><td><code>docs/images/</code></td><td>Plots written by <code>run_analysis.py</code></td></tr>
-      <tr><td><code>.github/workflows/ci.yml</code></td><td>GitHub Actions — install, ruff, pytest on Python 3.9–3.12</td></tr>
-    </tbody>
-  </table>
-</div>
-
-<h2>Run it</h2>
-<pre><code># Clone
-git clone https://github.com/omarja12/Bootstrap-Yield-Curve.git
+<section id="run">
+  <div class="wrap">
+    <h2>Run it</h2>
+    <p class="sub">
+      The yield curve module needs no network — the bond data ships with it. Only the
+      portfolio module reaches out for prices.
+    </p>
+<pre><code>git clone https://github.com/omarja12/Bootstrap-Yield-Curve.git
 cd Bootstrap-Yield-Curve
 
-# Environment
 python -m venv .venv
-source .venv/bin/activate        # Windows: .venv\Scripts\activate
+source .venv/bin/activate        <span class="cm"># Windows: .venv\Scripts\activate</span>
 
-# Install the package + dev tools + yfinance (optional)
 pip install -e ".[dev,yfinance]"
-
-# Tests
 pytest tests/ -v
 
-# Open the notebook
-jupyter lab notebooks/Yield_Curve_And_Portfolio_Analysis.ipynb
-
-# ...or run the same analysis headless
+<span class="cm"># the full analysis, headless — writes five plots to docs/images/</span>
 python notebooks/run_analysis.py</code></pre>
-<p>
-  The yield curve module needs no network — it ships with the bond data built in. The
-  portfolio module fetches prices from yfinance; if that fetch fails it falls back to a
-  simulated panel, which uses neutral asset names and marks every chart
-  <em>(synthetic sample data)</em> so it cannot be mistaken for real market data.
-</p>
+
+    <div class="tablewrap" style="margin-top:1.5rem">
+      <table class="api">
+        <caption>Repository layout.</caption>
+        <thead><tr><th>Path</th><th>Contents</th></tr></thead>
+        <tbody>
+          <tr><td>Bootstrapping_Yield_Curve.ipynb</td><td>The original Computational Finance notebook</td></tr>
+          <tr><td>notebooks/Yield_Curve_And_Portfolio_Analysis.ipynb</td><td>Walkthrough of the package API</td></tr>
+          <tr><td>notebooks/run_analysis.py</td><td>The same analysis, headless</td></tr>
+          <tr><td>src/yield_curve/bootstrap.py</td><td>YieldCurve, NelsonSiegel</td></tr>
+          <tr><td>src/yield_curve/portfolio.py</td><td>PortfolioAnalyzer and the yfinance helper</td></tr>
+          <tr><td>tests/test_bootstrap.py</td><td>Pytest suite — 17 tests</td></tr>
+          <tr><td>docs/images/</td><td>Plots written by run_analysis.py</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+</main>
 
 <footer>
-  <p>
-    Source: <a href="https://github.com/omarja12/Bootstrap-Yield-Curve">github.com/omarja12/Bootstrap-Yield-Curve</a>.
-    All rights reserved — see <a href="LICENSE">LICENSE</a>.
-  </p>
+  <div class="wrap">
+    <p>
+      Source on <a href="https://github.com/omarja12/Bootstrap-Yield-Curve">GitHub</a>.
+      All rights reserved — see <a href="LICENSE">LICENSE</a>.
+    </p>
+    <p>Figures on this page are generated by <code>notebooks/run_analysis.py</code>.</p>
+  </div>
 </footer>
 
 </body>

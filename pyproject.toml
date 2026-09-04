@@ -57,6 +57,9 @@ Homepage = "https://github.com/omarja12/Bootstrap-Yield-Curve"
 requires = ["hatchling"]
 build-backend = "hatchling.build"
 
+[tool.hatch.version]
+path = "pyproject.toml"
+
 [tool.hatch.build.targets.wheel]
 packages = ["src/yield_curve"]
 

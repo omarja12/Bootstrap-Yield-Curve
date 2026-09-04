@@ -18,7 +18,7 @@
 #      so all five PNG outputs are produced on first run.
 #
 # Requirements:
-#   - Python 3.8+
+#   - Python 3.9+
 #   - A POSIX-compatible shell (bash, zsh, MSYS2 on Windows)
 #   - Network access to PyPI (and Yahoo Finance if you want live data)
 #

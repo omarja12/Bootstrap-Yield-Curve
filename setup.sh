@@ -24,12 +24,12 @@
 #
 # After running:
 #   - Activate the venv:  source .venv/bin/activate   (Windows: .venv\\Scripts\\activate)
-#   - Open the demo:      jupyter lab notebooks/demo.ipynb
-#   - Or run headless:     python notebooks/demo.py
+#   - Open the notebook:  jupyter lab notebooks/Yield_Curve_And_Portfolio_Analysis.ipynb
+#   - Or run headless:     python notebooks/run_analysis.py
 #   - Read the docs:      cat README.md
-#   - Open the webpage:   open web/index.html      (macOS)
-#                          start web/index.html     (Windows)
-#                          xdg-open web/index.html  (Linux)
+#   - Open the webpage:   open index.html      (macOS)
+#                          start index.html     (Windows)
+#                          xdg-open index.html  (Linux)
 #
 # If you only want the core package (no yfinance, no notebook execution):
 #     pip install -e ".[dev]"
@@ -103,10 +103,10 @@ echo ""
 echo "==> Running test suite ..."
 "$PYTHON" -m pytest tests/ -v --tb=short
 
-# --- 5. Execute the demo notebook (headless) ------------------------------
+# --- 5. Execute the analysis notebook (headless) --------------------------
 
 echo ""
-echo "==> Executing demo notebook (headless, produces PNGs in repo root) ..."
+echo "==> Executing the analysis notebook (headless, produces PNGs) ..."
 if ! command -v jupyter >/dev/null 2>&1; then
     echo "    WARNING: 'jupyter' not on PATH — skipping notebook execution."
     echo "    Install it with:  pip install jupyterlab nbconvert"
@@ -115,9 +115,9 @@ else
         --to notebook \
         --execute \
         --ExecutePreprocessor.timeout=180 \
-        --output demo_executed.ipynb \
+        --output Yield_Curve_And_Portfolio_Analysis.ipynb \
         --allow-errors \
-        notebooks/demo.ipynb
+        notebooks/Yield_Curve_And_Portfolio_Analysis.ipynb
     echo "    Done. Outputs:"
     for png in yield_curve_overview.png nelson_siegel_fit.png cumulative_returns.png correlation_heatmap.png efficient_frontier.png; do
         if [ -f "$REPO_ROOT/$png" ]; then
@@ -146,10 +146,10 @@ echo "  Setup complete."
 echo ""
 echo "  Next steps:"
 echo "    1. Activate the venv:  source .venv/bin/activate"
-echo "    2. Open the demo:      jupyter lab notebooks/demo.ipynb"
-echo "    3. Or run headless:     python notebooks/demo.py"
+echo "    2. Open the notebook:  jupyter lab notebooks/Yield_Curve_And_Portfolio_Analysis.ipynb"
+echo "    3. Or run headless:     python notebooks/run_analysis.py"
 echo "    4. Read the docs:       cat README.md"
-echo "    5. Open the webpage:    open web/index.html"
+echo "    5. Open the webpage:    open index.html"
 echo ""
 echo "  Package API (import from any script after activating the venv):"
 echo ""

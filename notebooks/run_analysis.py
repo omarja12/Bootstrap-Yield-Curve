@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 """
-Bootstrap Yield Curve — Package Demo (script version).
+Yield curve bootstrapping and portfolio analysis — script version.
 
-Mirrors notebooks/demo.ipynb, executing end-to-end so a reviewer can
-run it headless (no Jupyter required).
+Mirrors Yield_Curve_And_Portfolio_Analysis.ipynb, executing end-to-end so
+it can be run headless (no Jupyter required).
 
 Run:
-    python notebooks/demo.py
+    python notebooks/run_analysis.py
 
 Requires: numpy, scipy, pandas, matplotlib, seaborn, numpy-financial,
           optionally yfinance (falls back to synthetic data if absent).

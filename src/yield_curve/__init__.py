@@ -12,4 +12,6 @@ Refactored into a package: September 2026.
 from .bootstrap import YieldCurve, NelsonSiegel
 from .portfolio import PortfolioAnalyzer, fetch_prices_from_yfinance
 
+__version__ = "2.0.0"
+
 __all__ = ["YieldCurve", "NelsonSiegel", "PortfolioAnalyzer", "fetch_prices_from_yfinance"]

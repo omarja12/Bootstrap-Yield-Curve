@@ -1,5 +1,6 @@
+[project]
 name = "yield-curve"
-version = "2.0.0"
+dynamic = ["version"]
 
 description = "Yield curve bootstrapping and portfolio analysis — a quantitative finance toolkit."
 
@@ -58,7 +59,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [tool.hatch.version]
-path = "pyproject.toml"
+path = "src/yield_curve/_version.py"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/yield_curve"]
@@ -69,16 +70,16 @@ target-version = "py38"
 
 [tool.ruff.lint]
 select = [
-  "E",   # pycodestyle errors
-  "F",   # pyflakes
-  "I",   # isort
-  "N",   # pep8-naming
-  "W",   # pycodestyle warnings
-  "B",   # flake8-bugbear
-  "C4",  # flake8-comprehensions
+  "E",
+  "F",
+  "I",
+  "N",
+  "W",
+  "B",
+  "C4",
 ]
 ignore = [
-  "E501",  # line too long (handled by formatter)
+  "E501",
 ]
 
 [tool.ruff.format]

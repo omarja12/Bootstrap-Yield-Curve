@@ -92,7 +92,9 @@ def run() -> None:
     print()
 
     # Save the combined rate plot
-    out_dir = os.path.dirname(os.path.abspath(__file__))
+    repo_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    out_dir = os.path.join(repo_root, "docs", "images")
+    os.makedirs(out_dir, exist_ok=True)
     yc.plot_rates(
         title="US Treasury Yield Curve — Spot, YTM, and Forward Rates",
         save_path=os.path.join(out_dir, "yield_curve_overview.png"),
@@ -129,11 +131,12 @@ def run() -> None:
     plt.close("all")
 
     # ------------------------------------------------------------------
-    # 4. Portfolio analysis — five tech stocks
+    # 4. Portfolio analysis
     # ------------------------------------------------------------------
-    print("\n[4] Portfolio analysis — five tech stocks")
+    print("\n[4] Portfolio analysis")
 
     tickers = ["AAPL", "IBM", "MSFT", "GOOG", "AMZN"]
+    is_synthetic = False
 
     try:
         prices = fetch_prices_from_yfinance(tickers, start="2019-01-01")
@@ -147,7 +150,11 @@ def run() -> None:
         print("Date range:", prices.index.min().date(), "to", prices.index.max().date())
     except Exception as e:
         print(f"yfinance unavailable or returned no data ({type(e).__name__}: {e})")
-        print("Generating realistic synthetic data for the demo...")
+        print("Falling back to synthetic data — the numbers below are NOT market data.")
+        is_synthetic = True
+        # Neutral labels: this panel is simulated, so it must not be presented
+        # under real ticker symbols.
+        tickers = ["ASSET_A", "ASSET_B", "ASSET_C", "ASSET_D", "ASSET_E"]
         np.random.seed(42)
         dates = pd.bdate_range("2019-01-02", periods=504)  # ~2 years of trading days
         mu = np.array([0.0005, 0.0003, 0.0006, 0.0005, 0.0007])  # ~12-18% annualized
@@ -167,8 +174,16 @@ def run() -> None:
             index=dates,
             columns=tickers,
         )
-        print(f"Generated {len(prices)} synthetic daily prices for {len(tickers)} tickers")
+        print(f"Generated {len(prices)} synthetic daily prices for {len(tickers)} assets")
         print("Synthetic panel:", prices.shape)
+
+    # Suffix carried onto every chart title so an exported image cannot be
+    # mistaken for an analysis of real market data.
+    src_note = " (synthetic sample data)" if is_synthetic else ""
+
+    # Label everything off the frame's own columns: yfinance returns them
+    # alphabetically, which is not the order `tickers` was written in.
+    names = list(prices.columns)
 
     print()
     print("First rows of price panel:")
@@ -185,7 +200,10 @@ def run() -> None:
     print()
 
     pa.cumulative_returns_plot(
-        title=f"Cumulative returns ({prices.index.min().date()} to {prices.index.max().date()})",
+        title=(
+            f"Cumulative returns ({prices.index.min().date()} "
+            f"to {prices.index.max().date()}){src_note}"
+        ),
         save_path=os.path.join(out_dir, "cumulative_returns.png"),
         show=False,
     )
@@ -193,6 +211,7 @@ def run() -> None:
     plt.close("all")
 
     pa.correlation_heatmap(
+        title=f"Correlation of Daily Returns{src_note}",
         save_path=os.path.join(out_dir, "correlation_heatmap.png"),
         show=False,
     )
@@ -203,7 +222,7 @@ def run() -> None:
     max_sharpe = pa.max_sharpe_portfolio()
 
     print("Maximum Sharpe portfolio:")
-    for ticker, w in zip(tickers, max_sharpe["weights"]):
+    for ticker, w in zip(names, max_sharpe["weights"]):
         if w > 1e-6:
             print(f"  {ticker:6s}: {w * 100:6.2f}%")
     print(f"  Volatility : {max_sharpe['volatility'] * 100:.2f}%")
@@ -229,7 +248,7 @@ def run() -> None:
         label=f"Max Sharpe ({max_sharpe['sharpe']:.2f})",
     )
     for ticker, ret, vol in zip(
-        tickers,
+        names,
         pa.mean_returns,
         np.sqrt(np.diag(pa.cov_matrix)),
     ):
@@ -237,7 +256,7 @@ def run() -> None:
 
     ax.set_xlabel("Annualized volatility (%)")
     ax.set_ylabel("Annualized return (%)")
-    ax.set_title("Markowitz Efficient Frontier — Tech Portfolio")
+    ax.set_title(f"Markowitz Efficient Frontier{src_note}")
     ax.legend()
     ax.grid(alpha=0.3)
     fig.savefig(os.path.join(out_dir, "efficient_frontier.png"), dpi=150, bbox_inches="tight")

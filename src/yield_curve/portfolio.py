@@ -4,9 +4,6 @@ mean-variance optimization.
 
 Connects to the yield curve module to use bootstrapped risk-free rates in
 Sharpe ratio calculations.
-
-Original data-fetching exercise: August 2022 (see `notebooks/`).
-Extended with portfolio optimization: September 2026.
 """
 
 from __future__ import annotations
@@ -193,6 +190,7 @@ class PortfolioAnalyzer:
 
     def correlation_heatmap(
         self,
+        title: str = "Correlation of Daily Returns",
         cmap: str = "viridis",
         save_path: Optional[str] = None,
         show: bool = True,
@@ -205,7 +203,7 @@ class PortfolioAnalyzer:
         ax.set_yticks(range(len(corr.index)))
         ax.set_xticklabels(corr.columns, rotation=45, ha="right")
         ax.set_yticklabels(corr.index)
-        ax.set_title("Correlation of Daily Returns")
+        ax.set_title(title)
         fig.colorbar(cax, ax=ax)
         if save_path:
             fig.savefig(save_path, dpi=150, bbox_inches="tight")
@@ -259,9 +257,18 @@ def fetch_prices_from_yfinance(
         )
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
-        data = yf.download(tickers, start=start, end=end, progress=False)
+        data = yf.download(
+            tickers, start=start, end=end, progress=False, auto_adjust=True
+        )
     if isinstance(data.columns, pd.MultiIndex):
-        prices = data["Adj Close"]
+        # yfinance dropped "Adj Close" once auto_adjust became the default, so
+        # prefer it when present and fall back to the adjusted "Close".
+        level = data.columns.get_level_values(0)
+        field = "Adj Close" if "Adj Close" in level else "Close"
+        prices = data[field]
+    elif "Close" in data.columns:
+        prices = data[["Close"]]
+        prices.columns = list(tickers)[:1]
     else:
         prices = data
     return prices.dropna(how="all").sort_index()

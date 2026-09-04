@@ -9,7 +9,7 @@ Original exercise: August 2022.
 Refactored into a package: September 2026.
 """
 
-from .bootstrap import YieldCurve, NelsonSiegel
+from .bootstrap import NelsonSiegel, YieldCurve
 from .portfolio import PortfolioAnalyzer, fetch_prices_from_yfinance
 
 __version__ = "2.0.0"

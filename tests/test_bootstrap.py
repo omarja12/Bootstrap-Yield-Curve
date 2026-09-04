@@ -4,14 +4,15 @@ Minimal test suite for the yield curve and portfolio modules.
 Run:  pytest tests/ -v
 """
 
+import os
+import sys
+
 import numpy as np
-import pandas as pd
 import pytest
 
-import sys, os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
 
-from yield_curve import YieldCurve, NelsonSiegel
+from yield_curve import NelsonSiegel, YieldCurve
 
 
 class TestYieldCurveConstruction:
@@ -39,15 +40,17 @@ class TestYieldCurveConstruction:
         """Final-period cash flow should be (coupon + 1) * 100."""
         y = YieldCurve(bonds)
         for i, row in enumerate(bonds):
-            T = int(row[0])
+            t_int = int(row[0])
             coupon = row[2]
-            assert abs(y.cash_flows[i, T - 1] - (coupon + 1) * 100) < 0.01
+            assert abs(y.cash_flows[i, t_int - 1] - (coupon + 1) * 100) < 0.01
 
     def test_invalid_input(self):
         with pytest.raises(ValueError):
             YieldCurve(np.array([[1, 100]]))  # wrong shape
         with pytest.raises(ValueError):
-            YieldCurve(np.column_stack((np.arange(1, 11), np.ones(10))))  # wrong shape
+            YieldCurve(
+                np.column_stack((np.arange(1, 11), np.ones(10)))
+            )  # wrong shape
 
 
 class TestDiscountFactors:
@@ -86,8 +89,8 @@ class TestDiscountFactors:
         y = YieldCurve(bonds)
         df = y.discount_factors("Matrix operations")
         assert np.all(df > 0)
-        assert np.all(df >= np.roll(df, -1)) or not np.all(df >= np.roll(df, -1))
-        assert df[0] > df[-1]  # discount factors should decline with maturity
+        # discount factors should decline with maturity (or at least not rise)
+        assert df[0] > df[-1]
 
 
 class TestSpotRates:

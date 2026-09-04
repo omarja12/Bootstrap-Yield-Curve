@@ -8,13 +8,13 @@ Refactored into a package: September 2026.
 
 from __future__ import annotations
 
-import numpy as np
-import numpy_financial as npf
-from scipy.optimize import minimize
-from typing import Tuple, Optional, List, Dict
+from typing import List, Optional, Tuple
 
 import matplotlib.pyplot as plt
+import numpy as np
+import numpy_financial as npf
 import seaborn as sns
+from scipy.optimize import minimize
 
 
 class YieldCurve:
@@ -40,12 +40,12 @@ class YieldCurve:
         of bond i at year j+1 (1-indexed)."""
         n = self.bonds.shape[0]
         cash_flows = np.zeros((n, n))
-        for i, (mat, price, coupon) in enumerate(self.bonds):
-            T = int(mat)
-            if T <= 0 or T > n:
-                raise ValueError(f"Maturity {T} out of range for bond {i}")
-            for j in range(1, T + 1):
-                if j < T:
+        for i, (mat, _price, coupon) in enumerate(self.bonds):
+            t = int(mat)
+            if t <= 0 or t > n:
+                raise ValueError(f"Maturity {t} out of range for bond {i}")
+            for j in range(1, t + 1):
+                if j < t:
                     cash_flows[i, j - 1] = np.round(100 * coupon, 2)
                 else:
                     cash_flows[i, j - 1] = np.round((coupon + 1) * 100, 2)
@@ -76,8 +76,8 @@ class YieldCurve:
             return np.linalg.solve(self._cash_flows, self.bonds[:, 1])
 
         elif method == "Global Solver":
-            def bond_prices(cfs, DF):
-                return cfs @ DF
+            def bond_prices(cfs, df):
+                return cfs @ df
 
             def error(dfs, cfs, p):
                 return ((bond_prices(cfs, dfs) - p) ** 2).sum()
@@ -93,14 +93,13 @@ class YieldCurve:
         elif method == "Iterative Procedure":
             tmp = []
             for row in self.bonds:
-                T = int(row[0])
                 coupon = row[2]
                 price = row[1]
-                # PV of coupons for years 1..T-1 using already computed DFs
+                # PV of coupons for years 1..t-1 using already computed DFs
                 pv_coupons = 100 * coupon * sum(tmp)
-                # Final cash flow at year T: coupon + face value
-                df_T = (price - pv_coupons) / (100 * (coupon + 1))
-                tmp.append(df_T)
+                # Final cash flow at year t: coupon + face value
+                df_t = (price - pv_coupons) / (100 * (coupon + 1))
+                tmp.append(df_t)
             return np.array(tmp)
 
         else:
@@ -131,14 +130,14 @@ class YieldCurve:
         """
         ytm = []
         for row in self.bonds:
-            T = int(row[0])
+            t = int(row[0])
             coupon = row[2]
             price = row[1]
             # cash flows: initial outflow = -price, then coupon*100 for years
-            # 1..T-1, and (coupon+1)*100 at year T
+            # 1..t-1, and (coupon+1)*100 at year t
             flows = [-price]
-            for t in range(1, T + 1):
-                if t < T:
+            for k in range(1, t + 1):
+                if k < t:
                     flows.append(coupon * 100)
                 else:
                     flows.append((coupon + 1) * 100)

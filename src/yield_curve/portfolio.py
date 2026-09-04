@@ -11,12 +11,12 @@ Extended with portfolio optimization: September 2026.
 
 from __future__ import annotations
 
-from typing import Optional, Tuple, List, Union
 import warnings
+from typing import List, Optional, Tuple
 
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
 
 # Optional dependencies — raiser helpful message if missing
 try:
@@ -65,12 +65,12 @@ class PortfolioAnalyzer:
 
     @property
     def mean_returns(self) -> pd.Series:
-        self.returns  # ensure computed
+        _ = self.returns  # ensure computed
         return self._mean_returns
 
     @property
     def cov_matrix(self) -> pd.DataFrame:
-        self.returns
+        _ = self.returns
         return self._cov_matrix
 
     def annualized_return(self, weights: np.ndarray) -> float:

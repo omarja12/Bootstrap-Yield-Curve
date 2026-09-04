@@ -208,4 +208,4 @@ Issues and PRs welcome — especially:
 
 ---
 
-*Built as a portfolio piece for quant / data-science roles. If you use this in your own work, consider dropping a note in the issues — always good to know where these things end up.*
+*I001 [*] Import block is un-sorted or un-formatted*

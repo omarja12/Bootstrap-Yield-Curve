@@ -6,18 +6,14 @@ description = "Yield curve bootstrapping and portfolio analysis — a quantitati
 
 readme = "README.md"
 
-requires-python = ">=3.8"
+requires-python = ">=3.9"
 
-license = {text = "GPL-3.0-or-later"}
-
-authors = [
-  {name = "Omar J", email = "jarir.omar@hotmail.fr"},
-]
+license = {text = "LicenseRef-Proprietary"}
 
 keywords = [
   "yield-curve", "bootstrapping", "finance", "quantitative",
   "portfolio-optimization", "Nelson-Siegel", "spot-rates",
-  "forward-rates", "data-science-portfolio",
+  "forward-rates",
 ]
 
 classifiers = [
@@ -25,9 +21,9 @@ classifiers = [
   "Intended Audience :: Financial and Insurance Industry",
   "Topic :: Office/Business :: Financial",
   "Topic :: Scientific/Engineering :: Mathematics",
-  "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
+  "License :: Other/Proprietary License",
+  "Private :: Do Not Upload",
   "Programming Language :: Python :: 3",
-  "Programming Language :: Python :: 3.8",
   "Programming Language :: Python :: 3.9",
   "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",
@@ -66,7 +62,7 @@ packages = ["src/yield_curve"]
 
 [tool.ruff]
 line-length = 100
-target-version = "py38"
+target-version = "py39"
 
 [tool.ruff.lint]
 select = [

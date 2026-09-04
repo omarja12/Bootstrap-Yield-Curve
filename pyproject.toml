@@ -86,7 +86,7 @@ ignore = [
 quote-style = "double"
 indent-style = "space"
 skip-magic-trailing-comma = false
-line-ending = "unix"
+line-ending = "lf"
 
 [tool.ruff.lint.isort]
 known-first-party = ["yield_curve"]

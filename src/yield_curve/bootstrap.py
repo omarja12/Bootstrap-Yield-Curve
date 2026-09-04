@@ -1,9 +1,6 @@
 """
 Yield curve bootstrapping: matrix operations, global solver, and iterative
 procedure, plus Nelson-Siegel parametric fitting.
-
-Original exercise: August 2022 (see `notebooks/`).
-Refactored into a package: September 2026.
 """
 
 from __future__ import annotations

@@ -1,18 +1,15 @@
 # Bootstrap Yield Curve
 
-A quantitative finance toolkit for **bootstrapping yield curves** from coupon-bearing bonds and **analyzing equity portfolios**, built and maintained by [Omar J](https://github.com/omarja12).
-
-- **Package:** `yield_curve` — pure-Python, minimal dependencies, well-tested.
-- **Origin:** a Computational Finance exercise (August 2022), refactored into a maintainable Python package (September 2026).
-- **Right now:** bootstrapping discount factors three ways + Nelson-Siegel fitting + Markowitz efficient frontier.
+Bootstrapping yield curves from coupon-bearing bonds, fitting Nelson-Siegel, and running
+mean-variance portfolio analysis on an equity panel.
 
 ---
 
 ## What's in the box
 
-### 1. Yield curve bootstrapping (the original exercise, elevated)
+### 1. Yield curve bootstrapping
 
-The core `YieldCurve` class takes a set of Treasury bonds (maturity, price, coupon) and bootstraps:
+The `YieldCurve` class takes a set of Treasury bonds (maturity, price, coupon) and bootstraps:
 
 | What | How |
 |------|-----|
@@ -21,9 +18,10 @@ The core `YieldCurve` class takes a set of Treasury bonds (maturity, price, coup
 | **Yield to maturity** | per bond via `numpy_financial.irr` |
 | **Forward rates** | 1-year forward rates from the spot curve |
 
-Plus a **Nelson-Siegel** parametric fit (`NelsonSiegel` class) — the industry-standard curve model, implemented from scratch and fitted by least squares.
+Plus a **Nelson-Siegel** parametric fit (`NelsonSiegel` class) — the industry-standard curve
+model, implemented from scratch and fitted by least squares.
 
-### 2. Portfolio analysis (the "what's next" on the original stock-data exercise)
+### 2. Portfolio analysis
 
 The `PortfolioAnalyzer` class works with daily price panels to compute:
 
@@ -35,7 +33,7 @@ The `PortfolioAnalyzer` class works with daily price panels to compute:
 | Correlation heatmap | seaborn-style |
 | Cumulative returns plot | matplotlib |
 
-It can pull market data from **yfinance** if you want live prices, or you can pass in your own DataFrame.
+It can pull market data from **yfinance**, or you can pass in your own DataFrame.
 
 ---
 
@@ -56,8 +54,11 @@ pip install -e ".[dev]"
 # Run the tests
 pytest tests/ -v
 
-# Open the demo notebook
-jupyter lab notebooks/demo.ipynb
+# Open the notebook
+jupyter lab notebooks/Yield_Curve_And_Portfolio_Analysis.ipynb
+
+# ...or run the same analysis headless
+python notebooks/run_analysis.py
 ```
 
 ### As a package (in your own project)
@@ -127,9 +128,10 @@ print("Weights:", max_sharpe["weights"])
 
 ```
 Bootstrap-Yield-Curve/
+├── Bootstrapping_Yield_Curve.ipynb           # the original Computational Finance notebook
 ├── notebooks/
-│   └── Bootstrapping_Yield_Curve.ipynb   # original exercise (2022) — preserved for the record
-│   └── demo.ipynb                        # modern demo using the package
+│   ├── Yield_Curve_And_Portfolio_Analysis.ipynb   # walkthrough using the package
+│   └── run_analysis.py                            # same analysis, headless
 ├── src/
 │   └── yield_curve/
 │       ├── __init__.py
@@ -137,13 +139,19 @@ Bootstrap-Yield-Curve/
 │       └── portfolio.py        # PortfolioAnalyzer, yfinance helper
 ├── tests/
 │   └── test_bootstrap.py       # pytest suite
+├── docs/images/                # plots written by run_analysis.py
 ├── LICENSE
 ├── pyproject.toml
 ├── requirements.txt
 └── README.md
 ```
 
-The original Jupyter notebook (`notebooks/Bootstrapping_Yield_Curve.ipynb`) is kept as-is: it documents the step-by-step exploration that the package now encapsulates. The new `demo.ipynb` shows how to use the package API directly.
+`Bootstrapping_Yield_Curve.ipynb` is the notebook the package grew out of, kept as it was
+written. The notebook under `notebooks/` shows how to use the package API directly.
+
+The portfolio section pulls live prices from yfinance. If that fetch fails, it falls back
+to a simulated panel — that path uses neutral asset names and marks every chart
+`(synthetic sample data)`, so simulated output is never presented as market data.
 
 ---
 
@@ -163,7 +171,7 @@ The original Jupyter notebook (`notebooks/Bootstrapping_Yield_Curve.ipynb`) is k
 
 ---
 
-## Background (why this exists)
+## Background
 
 ### Bootstrap, in plain terms
 
@@ -176,7 +184,7 @@ Three computational routes to the same answer:
 
 ### Why Nelson-Siegel?
 
-The bootstrapped curve from a handful of bonds is jagged and depends on the instruments you happened to have. Nelson-Siegel (and its extension, Svensson) gives a **smooth, parametric** curve with only a few parameters (level, slope, curvature, decay). It's the workhorse of central banks and dealers for exactly this reason. Implementing it from scratch here gives the bootstrapping exercise a real-world counterpart.
+The bootstrapped curve from a handful of bonds is jagged and depends on the instruments you happened to have. Nelson-Siegel (and its extension, Svensson) gives a **smooth, parametric** curve with only a few parameters (level, slope, curvature, decay). It's the workhorse of central banks and dealers for exactly this reason.
 
 ### Portfolio analysis — where it fits
 
@@ -186,26 +194,14 @@ Once you have a yield curve, you have a risk-free rate. Plug that into a mean-va
 
 ## License
 
-GPL-3.0-or-later — see [LICENSE](LICENSE).
+All rights reserved — see [LICENSE](LICENSE). The source is published for reading and
+review; any other use requires written permission.
 
 ---
 
-## History
+## Possible extensions
 
-This repo began in **August 2022** as a single Jupyter notebook (`Bootstrapping_Yield_Curve.ipynb`) documenting a Computational Finance assignment. The notebook is preserved in `notebooks/` for the record — it still runs, and the original plots are in its output cells.
-
-In **September 2026**, the code was extracted into a proper Python package (`src/yield_curve/`), tested, given CI, and extended with Nelson-Siegel fitting and Markowitz portfolio analysis. The original notebook is untouched; the package is the upgraded surface.
-
----
-
-## Contributing
-
-Issues and PRs welcome — especially:
-- Adding Nelson-Siegel-Svensson (three-factor extension with an extra decay term)
-- Adding cubic-spline / monotonic-spline bootstrapping options
-- Broader market-data connectors (FRED, Treasury.gov, etc.)
+- Nelson-Siegel-Svensson (three-factor extension with an extra decay term)
+- Cubic-spline / monotonic-spline bootstrapping options
+- Broader market-data connectors (FRED, Treasury.gov)
 - More tests (arbitrage-free checks, monotonicity, integration tests with live data)
-
----
-
-*I001 [*] Import block is un-sorted or un-formatted*

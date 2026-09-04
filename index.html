@@ -3,203 +3,102 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Bootstrap Yield Curve — Omar J</title>
-<meta name="description" content="A quantitative finance toolkit: yield curve bootstrapping (matrix, solver, iterative), Nelson-Siegel fitting, and Markowitz portfolio analysis. Python package, tested, CI, open source.">
+<title>Bootstrap Yield Curve</title>
+<meta name="description" content="Yield curve bootstrapping from coupon-bearing bonds, Nelson-Siegel fitting, and Markowitz portfolio analysis. A small, tested Python package.">
 <style>
   :root {
-    --bg: #0e1116;
-    --surface: #161b22;
-    --border: #30363d;
-    --fg: #e6edf3;
-    --muted: #8b949e;
-    --accent: #58a6ff;
-    --green: #3fb950;
-    --red: #f85149;
-    --yellow: #d29922;
+    --bg: #ffffff;
+    --fg: #1a1a1a;
+    --muted: #5c5c5c;
+    --rule: #dcdcdc;
+    --surface: #f6f6f4;
+    --link: #14507a;
   }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  html { color-scheme: dark; }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #16181a;
+      --fg: #e4e4e2;
+      --muted: #9a9a97;
+      --rule: #33363a;
+      --surface: #1e2124;
+      --link: #79b8e8;
+    }
+  }
+  * { box-sizing: border-box; }
   body {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    margin: 0 auto;
+    max-width: 46rem;
+    padding: 3rem 1.25rem 5rem;
     background: var(--bg);
     color: var(--fg);
+    font-family: Georgia, "Iowan Old Style", "Times New Roman", serif;
+    font-size: 17px;
     line-height: 1.65;
-    padding: 2rem 1rem;
-    max-width: 960px;
-    margin: 0 auto;
   }
-  a { color: var(--accent); text-decoration: none; }
-  a:hover { text-decoration: underline; }
-  code { background: var(--surface); padding: 0.15em 0.4em; border-radius: 4px; font-family: "SF Mono", "Cascadia Code", Consolas, monospace; font-size: 0.9em; }
-  pre { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 1rem; overflow-x: auto; font-size: 0.88em; }
-  pre code { background: transparent; padding: 0; }
-  blockquote {
-    border-left: 3px solid var(--accent);
-    padding-left: 1rem;
-    margin: 1rem 0;
-    color: var(--muted);
-  }
-  ul, ol { padding-left: 1.5rem; margin: 0.75rem 0; }
-  li { margin: 0.25rem 0; }
-
-  header { margin-bottom: 2.5rem; border-bottom: 1px solid var(--border); padding-bottom: 1.5rem; }
-  header h1 { font-size: 2rem; font-weight: 600; letter-spacing: -0.02em; margin-bottom: 0.25rem; }
-  header .subtitle { color: var(--muted); font-size: 1.05rem; }
-  header .meta { margin-top: 0.75rem; font-size: 0.9em; color: var(--muted); }
-  header .meta a { color: var(--muted); }
-
-  .badge {
-    display: inline-block;
-    padding: 0.2em 0.6em;
-    border-radius: 999px;
-    font-size: 0.8em;
-    font-weight: 500;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    color: var(--muted);
-    margin-right: 0.4rem;
-    margin-bottom: 0.3rem;
-  }
-  .badge.ok { border-color: var(--green); color: var(--green); }
-  .badge.new { border-color: var(--yellow); color: var(--yellow); }
-
-  section { margin-bottom: 2.5rem; }
+  a { color: var(--link); }
+  h1 { font-size: 1.9rem; font-weight: normal; margin: 0 0 .2rem; }
   h2 {
-    font-size: 1.4rem;
-    font-weight: 600;
-    margin-bottom: 0.75rem;
-    padding-bottom: 0.3rem;
-    border-bottom: 1px solid var(--border);
-    letter-spacing: -0.01em;
+    font-size: 1.2rem; font-weight: normal; margin: 2.5rem 0 .6rem;
+    padding-bottom: .3rem; border-bottom: 1px solid var(--rule);
   }
-  h3 { font-size: 1.1rem; margin: 1.2rem 0 0.4rem; color: var(--fg); }
-
-  .grid2 {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 1.5rem;
-    margin: 1rem 0;
+  h3 { font-size: 1rem; margin: 1.4rem 0 .3rem; }
+  p, li { margin: .6rem 0; }
+  .lede { color: var(--muted); margin: 0 0 1.5rem; }
+  code, pre {
+    font-family: ui-monospace, "SF Mono", Consolas, "Liberation Mono", monospace;
+    font-size: .85em;
   }
-  @media (max-width: 600px) { .grid2 { grid-template-columns: 1fr; } }
-  .card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 1rem 1.25rem;
+  code { background: var(--surface); padding: .1em .35em; border-radius: 3px; }
+  pre {
+    background: var(--surface); border: 1px solid var(--rule); border-radius: 4px;
+    padding: .9rem 1rem; overflow-x: auto; line-height: 1.5;
   }
-  .card h3 { margin-top: 0; }
-  .card p { color: var(--muted); font-size: 0.95em; margin: 0.25rem 0; }
-
-  .tablewrap { overflow-x: auto; margin: 0.75rem 0; }
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 0.9em;
-  }
-  th, td {
-    text-align: left;
-    padding: 0.5rem 0.75rem;
-    border-bottom: 1px solid var(--border);
-  }
-  th { background: var(--surface); color: var(--muted); font-weight: 500; }
-  tr:last-child td { border-bottom: none; }
-  td code { background: transparent; padding: 0; }
-
-  .history-line {
-    display: flex;
-    gap: 1.5rem;
-    align-items: flex-start;
-    margin: 1.25rem 0;
-    padding: 1rem;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 6px;
-  }
-  .history-line .year {
-    font-size: 1.6rem;
-    font-weight: 700;
-    color: var(--accent);
-    min-width: 4rem;
-    line-height: 1.2;
-  }
-  .history-line .body { flex: 1; }
-  .history-line .body h3 { margin: 0 0 0.25rem; }
-  .history-line .body p { color: var(--muted); font-size: 0.92em; }
-
-  .foot {
-    margin-top: 3rem;
-    padding-top: 1.5rem;
-    border-top: 1px solid var(--border);
-    color: var(--muted);
-    font-size: 0.88em;
-  }
-  .foot a { color: var(--muted); }
-
-  .ribbon {
-    position: absolute;
-    top: 0; right: 0;
-    border: 0;
-    border-radius: 0 0 0 8px;
+  pre code { background: none; padding: 0; }
+  .tablewrap { overflow-x: auto; }
+  table { border-collapse: collapse; width: 100%; font-size: .92rem; margin: .8rem 0; }
+  th, td { text-align: left; padding: .45rem .6rem; border-bottom: 1px solid var(--rule); vertical-align: top; }
+  th { font-weight: bold; }
+  figure { margin: 1.4rem 0; }
+  figure img { width: 100%; border: 1px solid var(--rule); border-radius: 4px; background: #fff; }
+  figcaption { color: var(--muted); font-size: .85rem; margin-top: .4rem; }
+  footer {
+    margin-top: 3.5rem; padding-top: 1rem; border-top: 1px solid var(--rule);
+    color: var(--muted); font-size: .88rem;
   }
 </style>
 </head>
 <body>
 
-<a href="https://github.com/omarja12/Bootstrap-Yield-Curve" style="position:absolute;top:0;right:0;background:var(--surface);border:1px solid var(--border);border-radius:0 0 0 6px;padding:0.3rem 0.6rem;color:var(--fg);font-size:0.85rem;">View on GitHub →</a>
+<h1>Bootstrap Yield Curve</h1>
+<p class="lede">
+  Bootstrapping yield curves from coupon-bearing bonds, fitting Nelson-Siegel, and running
+  mean-variance portfolio analysis on an equity panel.
+</p>
 
-<header>
-  <h1>Bootstrap Yield Curve</h1>
-  <div class="subtitle">A quantitative finance toolkit — yield curve bootstrapping, Nelson-Siegel fitting, and Markowitz portfolio analysis.</div>
-  <div class="meta">
-    <a href="https://github.com/omarja12">Omar J</a> · GPL-3.0 · Python 3.8+ &nbsp;|&nbsp;
-    <span class="badge ok">6 passing tests</span>
-    <span class="badge ok">CI 3.9–3.12</span>
-    <span class="badge new">Nelson-Siegel</span>
-    <span class="badge new">Efficient frontier</span>
-  </div>
-</header>
+<h2>What it does</h2>
+<p>
+  A Python package that builds a yield curve from coupon-bearing bonds using three
+  bootstrapping methods, fits a Nelson-Siegel parametric curve, and runs a mean-variance
+  portfolio analysis on a panel of daily prices. The bootstrapping logic, the forward-rate
+  derivation and the Nelson-Siegel fit are written out rather than imported.
+</p>
 
-<section>
-  <h2>What it is</h2>
-  <p>
-    A Python package that builds a yield curve from coupon-bearing bonds using three
-    bootstrapping methods, fits a Nelson-Siegel parametric curve, and runs a mean-variance
-    portfolio analysis on an equity panel. It started as a single Jupyter notebook for a
-    Computational Finance assignment in <strong>August 2022</strong> and was refactored into a
-    proper package with tests and CI in <strong>September 2026</strong>.
-  </p>
-  <p>
-    The original notebook is preserved untouched in <code>notebooks/</code> — it still runs and
-    documents the original step-by-step exploration. The package API lives in
-    <code>src/yield_curve/</code> and is what you'd use in production code.
-  </p>
-</section>
+<h3><code>YieldCurve</code></h3>
+<p>Discount factors via matrix solve, global solver, or iterative procedure; spot rates, YTM per bond, and 1-year forward rates.</p>
 
-<section>
-  <h2>What you get</h2>
-  <div class="grid2">
-    <div class="card">
-      <h3>Yield Curve Bootstrapping</h3>
-      <p><code>YieldCurve</code> class — discount factors via matrix solve, global solver, or iterative procedure; spot rates, YTM per bond, and 1-year forward rates.</p>
-    </div>
-    <div class="card">
-      <h3>Nelson-Siegel Fit</h3>
-      <p><code>NelsonSiegel</code> class — parametric curve (level, slope, curvature, decay) fitted by least squares to market discount factors. Smooths the jagged bootstrap.</p>
-    </div>
-    <div class="card">
-      <h3>Portfolio Analysis</h3>
-      <p><code>PortfolioAnalyzer</code> — daily returns, annualized mean/vol/Sharpe, correlation heatmap, cumulative returns plot. Risk-free rate optional (can come from the bootstrapped curve).</p>
-    </div>
-    <div class="card">
-      <h3>Efficient Frontier</h3>
-      <p>Markowitz mean-variance optimization: scan target returns, minimize variance, find the maximum-Sharpe tangency portfolio. Optional yfinance connector for live data.</p>
-    </div>
-  </div>
-</section>
+<h3><code>NelsonSiegel</code></h3>
+<p>Parametric curve (level, slope, curvature, decay) fitted by least squares to market discount factors. Smooths the jagged bootstrap.</p>
 
-<section>
-  <h2>Quick example</h2>
-  <pre><code>from yield_curve import YieldCurve, NelsonSiegel
+<h3><code>PortfolioAnalyzer</code></h3>
+<p>Daily returns, annualized mean, volatility and Sharpe, correlation heatmap, cumulative returns, the Markowitz efficient frontier and the maximum-Sharpe tangency portfolio. Prices come from yfinance or from a DataFrame you supply.</p>
+
+<figure>
+  <img src="docs/images/yield_curve_overview.png" alt="Spot rates, yield to maturity and 1-year forward rates plotted against maturity for a ten-bond Treasury curve.">
+  <figcaption>Spot, YTM and forward rates bootstrapped from ten Treasury bonds.</figcaption>
+</figure>
+
+<h2>Quick example</h2>
+<pre><code>from yield_curve import YieldCurve, NelsonSiegel
 
 # 10 Treasury bonds: (maturity_years, price, coupon_rate)
 bonds = np.array([
@@ -221,116 +120,79 @@ spot  = yc.spot_rates()          # annual-compounded spot curve
 ytm   = yc.bonds_ytm()           # yield to maturity per bond
 fwd   = yc.forward_rates()       # 1-year forward rates
 
-# Visualize
-yc.plot_rates(title='US Treasury Yield Curve').savefig('yield_curve.png')
-
 # Nelson-Siegel smooth fit
 ns = NelsonSiegel(bonds[:, 0].astype(float), df_matrix)
 ns.fit()
-print(f'beta0={ns.params[0]:.4f}, beta1={ns.params[1]:.4f}, tau={ns.params[3]:.3f}')
-ns.plot().savefig('nelson_siegel.png')</code></pre>
+print(f'beta0={ns.params[0]:.4f}, beta1={ns.params[1]:.4f}, tau={ns.params[3]:.3f}')</code></pre>
 
-  <p style="margin-top: 0.75rem;">
-    For the equity side: <code>PortfolioAnalyzer</code> takes a DataFrame of prices
-    (columns = tickers, index = dates) and computes the efficient frontier, max-Sharpe
-    portfolio, correlation heatmap, and cumulative returns.
-  </p>
-</section>
+<figure>
+  <img src="docs/images/efficient_frontier.png" alt="Markowitz efficient frontier with individual assets scattered by volatility and return, and the maximum-Sharpe portfolio marked.">
+  <figcaption>Efficient frontier and maximum-Sharpe portfolio over five large-cap tech stocks.</figcaption>
+</figure>
 
-<section>
-  <h2>Package vs. original notebook</h2>
-  <div class="history-line">
-    <div class="year">2022</div>
-    <div class="body">
-      <h3>Original exercise — one notebook</h3>
-      <p>A single <code>Bootstrapping_Yield_Curve.ipynb</code> with two exercises:
-      (1) bootstrap a Treasury curve three ways and plot spot/YTM/forward rates;
-      (2) fetch five tech stocks from Yahoo, compute returns, correlation, save CSVs.
-      The code lived in notebook cells — no package, no tests, no CI.</p>
-    </div>
-  </div>
-  <div class="history-line">
-    <div class="year">2026</div>
-    <div class="body">
-      <h3>Package — same logic, engineered surface</h3>
-      <p>The <code>YieldCurve</code> class moved to <code>src/yield_curve/bootstrap.py</code>.
-      A <code>NelsonSiegel</code> class was added. The stock-data exercise became
-      <code>PortfolioAnalyzer</code> with efficient frontier and max-Sharpe optimization.
-      The package is tested (6+ tests on the core logic), has CI on 3.9–3.12, a
-      <code>pyproject.toml</code>, and a <code>demo.ipynb</code> that imports it.</p>
-    </div>
-  </div>
-</section>
+<h2>API reference</h2>
 
-<section>
-  <h2>Repo layout</h2>
-  <div class="tablewrap">
-    <table>
-      <thead><tr><th>Path</th><th>What</th></tr></thead>
-      <tbody>
-        <tr><td><code>notebooks/Bootstrapping_Yield_Curve.ipynb</code></td><td>Original 2022 exercise — preserved unchanged</td></tr>
-        <tr><td><code>notebooks/demo.ipynb</code></td><td>Modern walkthrough of the package API</td></tr>
-        <tr><td><code>src/yield_curve/__init__.py</code></td><td>Package entry point — <code>YieldCurve</code>, <code>NelsonSiegel</code></td></tr>
-        <tr><td><code>src/yield_curve/bootstrap.py</code></td><td>Core: bootstrapping + Nelson-Siegel</td></tr>
-        <tr><td><code>src/yield_curve/portfolio.py</code></td><td><code>PortfolioAnalyzer</code> + yfinance helper</td></tr>
-        <tr><td><code>tests/test_bootstrap.py</code></td><td>Pytest suite — construction, DF agreement, spot/YTM/forward, NS fit</td></tr>
-        <tr><td><code>pyproject.toml</code></td><td>Build, dependencies, optional yfinance, ruff config</td></tr>
-        <tr><td><code>.github/workflows/ci.yml</code></td><td>GitHub Actions — install, ruff, pytest on push/PR</td></tr>
-        <tr><td><code>LICENSE</code></td><td>GPL-3.0-or-later (unchanged from the original)</td></tr>
-        <tr><td><code>requirements.txt</code></td><td>Flat dependency list for quick pip install</td></tr>
-      </tbody>
-    </table>
-  </div>
-</section>
+<h3><code>YieldCurve(bonds)</code></h3>
+<p><code>bonds</code>: <code>np.ndarray</code>, shape <code>(n, 3)</code>, columns = (maturity_years, dirty_price, coupon_rate). Face value = 100.</p>
+<div class="tablewrap">
+  <table>
+    <thead><tr><th>Method</th><th>Returns</th></tr></thead>
+    <tbody>
+      <tr><td><code>discount_factors(method)</code></td><td><code>np.ndarray (n,)</code> — 'Matrix operations' / 'Global Solver' / 'Iterative Procedure'</td></tr>
+      <tr><td><code>spot_rates()</code></td><td><code>np.ndarray (n,)</code> — annual-compounded spot rates</td></tr>
+      <tr><td><code>bonds_ytm()</code></td><td><code>np.ndarray (n,)</code> — YTM per bond</td></tr>
+      <tr><td><code>forward_rates()</code></td><td><code>np.ndarray (n-1,)</code> — 1-year forward rates</td></tr>
+      <tr><td><code>plot_rates(title, save_path)</code></td><td><code>plt.Figure</code> — spot + YTM + forward on one chart</td></tr>
+    </tbody>
+  </table>
+</div>
 
-<section>
-  <h2>API reference</h2>
-  <h3><code>YieldCurve(bonds)</code></h3>
-  <p><code>bonds</code>: <code>np.ndarray</code>, shape <code>(n, 3)</code>, columns = (maturity_years, dirty_price, coupon_rate). Face value = 100.</p>
-  <div class="tablewrap">
-    <table>
-      <thead><tr><th>Method</th><th>Returns</th></tr></thead>
-      <tbody>
-        <tr><td><code>discount_factors(method)</code></td><td><code>np.ndarray (n,)</code> — 'Matrix operations' / 'Global Solver' / 'Iterative Procedure'</td></tr>
-        <tr><td><code>spot_rates()</code></td><td><code>np.ndarray (n,)</code> — annual-compounded spot rates</td></tr>
-        <tr><td><code>bonds_ytm()</code></td><td><code>np.ndarray (n,)</code> — YTM per bond</td></tr>
-        <tr><td><code>forward_rates()</code></td><td><code>np.ndarray (n-1,)</code> — 1-year forward rates</td></tr>
-        <tr><td><code>plot_rates(title, save_path)</code></td><td><code>plt.Figure</code> — spot + YTM + forward on one chart</td></tr>
-      </tbody>
-    </table>
-  </div>
+<h3><code>NelsonSiegel(maturities, discount_factors)</code></h3>
+<p>Fit a parametric curve <code>f(t) = β₀ + β₁·e⁻ᵗ/ᵗ + β₂·(t/τ)·e⁻ᵗ/ᵗ</code> to market discount factors by least squares.</p>
+<div class="tablewrap">
+  <table>
+    <thead><tr><th>Method</th><th>Returns</th></tr></thead>
+    <tbody>
+      <tr><td><code>fit()</code></td><td>self — solves for β₀, β₁, β₂, τ</td></tr>
+      <tr><td><code>fitted_discount_factors()</code></td><td><code>np.ndarray</code> — model DF over the input maturities</td></tr>
+      <tr><td><code>plot(market_df, save_path)</code></td><td><code>plt.Figure</code> — market vs fitted DF</td></tr>
+    </tbody>
+  </table>
+</div>
 
-  <h3><code>NelsonSiegel(maturities, discount_factors)</code></h3>
-  <p>Fit a parametric curve <code>f(t) = β₀ + β₁·e⁻ᵗ/ᵗ + β₂·(t/τ)·e⁻ᵗ/ᵗ</code> to market discount factors by least squares.</p>
-  <div class="tablewrap">
-    <table>
-      <thead><tr><th>Method</th><th>Returns</th></tr></thead>
-      <tbody>
-        <tr><td><code>fit()</code></td><td>self — solves for β₀, β₁, β₂, τ</td></tr>
-        <tr><td><code>fitted_discount_factors()</code></td><td><code>np.ndarray</code> — model DF over the input maturities</td></tr>
-        <tr><td><code>plot(market_df, save_path)</code></td><td><code>plt.Figure</code> — market vs fitted DF</td></tr>
-      </tbody>
-    </table>
-  </div>
+<h3><code>PortfolioAnalyzer(prices, risk_free_rate=0.0)</code></h3>
+<p><code>prices</code>: <code>pd.DataFrame</code>, columns = tickers, index = dates (daily close prices).</p>
+<div class="tablewrap">
+  <table>
+    <thead><tr><th>Method</th><th>Returns</th></tr></thead>
+    <tbody>
+      <tr><td><code>efficient_frontier(n_points)</code></td><td><code>pd.DataFrame</code> — columns: volatility, return, sharpe, weights</td></tr>
+      <tr><td><code>max_sharpe_portfolio()</code></td><td><code>dict</code> — weights, volatility, return, sharpe</td></tr>
+      <tr><td><code>correlation_heatmap(title, save_path)</code></td><td><code>plt.Figure</code> — correlation matrix of daily returns</td></tr>
+      <tr><td><code>cumulative_returns_plot(title, save_path)</code></td><td><code>plt.Figure</code> — cumulative returns per asset</td></tr>
+    </tbody>
+  </table>
+</div>
 
-  <h3><code>PortfolioAnalyzer(prices, risk_free_rate=0.0)</code></h3>
-  <p><code>prices</code>: <code>pd.DataFrame</code>, columns = tickers, index = dates (daily close prices).</p>
-  <div class="tablewrap">
-    <table>
-      <thead><tr><th>Method</th><th>Returns</th></tr></thead>
-      <tbody>
-        <tr><td><code>efficient_frontier(n_points)</code></td><td><code>pd.DataFrame</code> — columns: volatility, return, sharpe, weights</td></tr>
-        <tr><td><code>max_sharpe_portfolio()</code></td><td><code>dict</code> — weights, volatility, return, sharpe</td></tr>
-        <tr><td><code>correlation_heatmap(save_path)</code></td><td><code>plt.Figure</code> — seaborn-style correlation matrix</td></tr>
-        <tr><td><code>cumulative_returns_plot(save_path)</code></td><td><code>plt.Figure</code> — cumulative returns per asset</td></tr>
-      </tbody>
-    </table>
-  </div>
-</section>
+<h2>Repo layout</h2>
+<div class="tablewrap">
+  <table>
+    <thead><tr><th>Path</th><th>What</th></tr></thead>
+    <tbody>
+      <tr><td><code>Bootstrapping_Yield_Curve.ipynb</code></td><td>The original Computational Finance notebook</td></tr>
+      <tr><td><code>notebooks/Yield_Curve_And_Portfolio_Analysis.ipynb</code></td><td>Walkthrough of the package API</td></tr>
+      <tr><td><code>notebooks/run_analysis.py</code></td><td>The same analysis, headless</td></tr>
+      <tr><td><code>src/yield_curve/bootstrap.py</code></td><td>Core: bootstrapping + Nelson-Siegel</td></tr>
+      <tr><td><code>src/yield_curve/portfolio.py</code></td><td><code>PortfolioAnalyzer</code> + yfinance helper</td></tr>
+      <tr><td><code>tests/test_bootstrap.py</code></td><td>Pytest suite — construction, DF agreement, spot/YTM/forward, NS fit</td></tr>
+      <tr><td><code>docs/images/</code></td><td>Plots written by <code>run_analysis.py</code></td></tr>
+      <tr><td><code>.github/workflows/ci.yml</code></td><td>GitHub Actions — install, ruff, pytest on Python 3.9–3.12</td></tr>
+    </tbody>
+  </table>
+</div>
 
-<section>
-  <h2>Run it</h2>
-  <pre><code># Clone
+<h2>Run it</h2>
+<pre><code># Clone
 git clone https://github.com/omarja12/Bootstrap-Yield-Curve.git
 cd Bootstrap-Yield-Curve
 
@@ -344,34 +206,24 @@ pip install -e ".[dev,yfinance]"
 # Tests
 pytest tests/ -v
 
-# Open the demo notebook
-jupyter lab notebooks/demo.ipynb</code></pre>
-  <p>No network required for the yield curve module — it ships with the original bond
-  data built in. The portfolio module needs <code>yfinance</code> for live data (or pass
-  in your own DataFrame).</p>
-</section>
+# Open the notebook
+jupyter lab notebooks/Yield_Curve_And_Portfolio_Analysis.ipynb
 
-<section>
-  <h2>Why a hiring manager cares</h2>
-  <ul>
-    <li><strong>Quant fundamentals implemented, not imported:</strong> the bootstrap logic, forward-rate derivation, and Nelson-Siegel fit are all written out — you can read the math in the code.</li>
-    <li><strong>Python package engineering:</strong> <code>src/</code> layout, <code>pyproject.toml</code>, type-aware code, <code>pytest</code>, GitHub Actions. This is the difference between "I did a notebook exercise" and "I built a library."</li>
-    <li><strong>Finance domain depth:</strong> spot rates, forward rates, YTM, Nelson-Siegel — the vocabulary of fixed income and the tools used in pricing, risk, and ALM.</li>
-    <li><strong>Portfolio theory end to end:</strong> price panel → returns → correlation → efficient frontier → max-Sharpe tangency. The full mean-variance pipeline.</li>
-    <li><strong>4-year provenance preserved:</strong> the 2022 notebook is still there, untouched. It shows this isn't a fresh portfolio dump — it's a project that evolved over time.</li>
-  </ul>
-</section>
+# ...or run the same analysis headless
+python notebooks/run_analysis.py</code></pre>
+<p>
+  The yield curve module needs no network — it ships with the bond data built in. The
+  portfolio module fetches prices from yfinance; if that fetch fails it falls back to a
+  simulated panel, which uses neutral asset names and marks every chart
+  <em>(synthetic sample data)</em> so it cannot be mistaken for real market data.
+</p>
 
-<div class="foot">
+<footer>
   <p>
-    Built by <a href="https://github.com/omarja12">Omar J</a>.
-    Original exercise <strong>August 2022</strong> · Package refactor <strong>September 2026</strong>.
+    Source: <a href="https://github.com/omarja12/Bootstrap-Yield-Curve">github.com/omarja12/Bootstrap-Yield-Curve</a>.
+    All rights reserved — see <a href="LICENSE">LICENSE</a>.
   </p>
-  <p>
-    License: <a href="LICENSE">GPL-3.0-or-later</a>.
-    Hosted on <a href="https://github.com/omarja12/Bootstrap-Yield-Curve">GitHub</a>.
-  </p>
-</div>
+</footer>
 
 </body>
 </html>

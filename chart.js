@@ -57,8 +57,8 @@
     var lo = Math.min.apply(null, all);
     var hi = Math.max.apply(null, all);
     var span = (hi - lo) || 1;
-    lo -= span * 0.16;
-    hi += span * 0.16;
+    lo -= span * 0.09;
+    hi += span * 0.09;
 
     var X = function (m) { return PAD_L + (m - 1) / 9 * (W - PAD_L - PAD_R); };
     var Y = function (v) { return PAD_T + (hi - v) / (hi - lo) * (H - PAD_T - PAD_B); };

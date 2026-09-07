@@ -38,20 +38,18 @@
       </div>
     </div>
 
-    <div class="hero-visual reveal reveal-delay" role="img" aria-label="Illustration of a humped yield curve falling across maturities">
+    <div class="hero-visual reveal reveal-delay" role="img" aria-label="Illustration of a yield curve that peaks early then falls away across maturities">
       <div class="visual-label">RATE / MATURITY</div>
-      <div class="orbit orbit-a"></div><div class="orbit orbit-b"></div>
-      <div class="visual-axis axis-x"><span>1Y</span><span>4Y</span><span>7Y</span><span>10Y</span></div>
-      <div class="visual-axis axis-y"><span>5.2%</span><span>3.6%</span><span>2.0%</span></div>
-      <svg class="hero-chart" viewBox="0 0 560 360" aria-hidden="true" focusable="false">
-        <path class="chart-grid" d="M38 50H530 M38 128H530 M38 206H530 M38 284H530 M38 50V284 M200 50V284 M360 50V284 M530 50V284"/>
-        <path class="curve" style="stroke:#b8862b" d="M38 92 C86 78, 128 72, 172 76 S300 128, 360 166 S470 232, 530 276"/>
-        <path class="curve" style="stroke:#79b8a6" d="M38 100 C86 88, 128 83, 172 86 S300 124, 360 150 S470 196, 530 232"/>
-        <path class="curve" style="stroke:#cfd8d2" d="M38 106 C86 95, 128 90, 172 93 S300 129, 360 156 S470 204, 530 242"/>
-        <circle cx="172" cy="76" r="4.5" class="curve-point"/>
-        <circle cx="530" cy="276" r="4.5" class="curve-point"/>
-      </svg>
       <div class="visual-caption">Ten quoted prices<br><strong>one term structure</strong></div>
+      <div class="visual-axis axis-x"><span>1Y</span><span>4Y</span><span>7Y</span><span>10Y</span></div>
+      <svg class="hero-chart" viewBox="0 0 560 300" preserveAspectRatio="none" aria-hidden="true" focusable="false">
+        <path class="chart-grid" d="M0 22H560 M0 92H560 M0 162H560 M0 232H560 M0 0V232 M187 0V232 M373 0V232 M559 0V232"/>
+        <path class="curve" style="stroke:#b8862b" d="M0 66 C60 40, 110 30, 168 34 S320 118, 373 152 S490 216, 560 244"/>
+        <path class="curve" style="stroke:#79b8a6" d="M0 78 C60 54, 110 45, 168 49 S320 116, 373 142 S490 190, 560 210"/>
+        <path class="curve" style="stroke:#cfd8d2" d="M0 86 C60 63, 110 54, 168 58 S320 122, 373 150 S490 200, 560 222"/>
+        <circle cx="168" cy="34" r="5" class="curve-point"/>
+        <circle cx="560" cy="244" r="5" class="curve-point"/>
+      </svg>
     </div>
   </section>
 
@@ -63,14 +61,20 @@
   </section>
 
   <section class="prose body-copy">
-    <h2>The idea, in plain terms</h2>
+    <div class="section-head">
+      <h2>The idea, in plain terms</h2>
+      <p class="intro">No background needed. What follows is the whole problem in three short paragraphs.</p>
+    </div>
     <p>Governments borrow money by selling bonds. A bond is a promise: pay a little each year, then repay the rest at the end. Thousands of them trade every day, and each has a price.</p>
     <p>Hidden inside those prices is something nobody publishes directly &mdash; the interest rate for <em>every</em> future year. Working it out is called <strong>bootstrapping</strong>: use the one-year bond to pin down the one-year rate, then use that answer to unlock the two-year bond, and so on up the ladder. Each result pulls the next one up behind it.</p>
     <p>This project does that with ten bonds, and recovers the full picture below.</p>
   </section>
 
   <section class="prose body-copy" id="explore">
-    <h2>The curve it found</h2>
+    <div class="section-head">
+      <h2>The curve it found</h2>
+      <p class="intro">Switch between the rates themselves and the discount factors they come from.</p>
+    </div>
     <p>Two of these lines are what it costs to borrow <em>up to</em> a given year. The third &mdash; the forward rate &mdash; is the cost of borrowing <em>during</em> that single year alone. Hover any point to read the exact figures.</p>
   </section>
 
@@ -134,7 +138,10 @@
   </section>
 
   <section class="prose body-copy">
-    <h2>Read it in order</h2>
+    <div class="section-head">
+      <h2>Read it in order</h2>
+      <p class="intro">Theory first, results after &mdash; or jump straight to whichever you came for.</p>
+    </div>
     <p>Five short chapters. The first three build the theory from scratch, assuming no background; the last two show what came out of it.</p>
   </section>
 
@@ -169,6 +176,12 @@
         <h3>The equity exercise</h3>
         <p>Part two: daily prices, cumulative returns, correlation on returns, and a CSV round-trip.</p>
         <span class="go">Read &#8594;</span>
+      </a>
+      <a class="ch-card" href="Bootstrapping_Yield_Curve.ipynb" download>
+        <span class="n">&#8595;</span>
+        <h3>The notebook</h3>
+        <p>Every figure and table on this site comes from one Jupyter notebook. Download it and run the whole thing yourself.</p>
+        <span class="go">Download &#8595;</span>
       </a>
     </div>
   </section>

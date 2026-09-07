@@ -3,110 +3,166 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="theme-color" content="#16181b">
-<meta name="description" content="Bootstrapping a Treasury yield curve from coupon-bearing bonds: the theory, three computational methods, and the results.">
-<title>Bootstrapping the Yield Curve</title>
+<meta name="theme-color" content="#1b2a26">
+<meta name="description" content="Recovering a discount curve from ten coupon-bearing bonds three independent ways, and reading the spot, yield and forward curves that follow.">
+<title>The Yield Curve — bootstrapping from bond prices</title>
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Fraunces:opsz,wght@9..144,500;9..144,650&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-<div class="layout">
 
-  <aside class="sidebar" id="sidebar">
-    <a class="brand" href="index.html">
-      <div class="brand-title">Bootstrapping the Yield Curve</div>
-      <div class="brand-sub">Computational finance &middot; 2022</div>
-    </a>
-    <button class="menu-btn" id="menuBtn" aria-expanded="false" aria-controls="sidebarBody">MENU</button>
-    <div class="sidebar-body" id="sidebarBody">
-      <p class="toc-label">Contents</p>
-      <ul class="toc">
-        <li><a href="index.html" aria-current="page"><span class="n">00</span><span>Overview</span></a></li>
-        <li><a href="01-discounting.html"><span class="n">01</span><span>Discounting a bond</span></a></li>
-        <li><a href="02-bootstrapping.html"><span class="n">02</span><span>Three ways to bootstrap</span></a></li>
-        <li><a href="03-rates.html"><span class="n">03</span><span>Spot, yield and forward</span></a></li>
-        <li><a href="04-results.html"><span class="n">04</span><span>Results</span></a></li>
-        <li><a href="05-equities.html"><span class="n">05</span><span>The equity exercise</span></a></li>
-      </ul>
-      <p class="sidebar-foot">
-        <a href="https://github.com/omarja12/Bootstrap-Yield-Curve">Source on GitHub</a><br>
-        <a href="Bootstrapping_Yield_Curve.ipynb" download>Download the notebook</a><br>
-        GPL-3.0
-      </p>
-    </div>
-  </aside>
+<header class="site-header">
+  <a class="wordmark" href="index.html" aria-label="Home"><span class="wordmark-mark">Y</span><span>THE YIELD CURVE</span></a>
+  <nav class="top-nav" aria-label="Primary">
+    <a href="index.html" aria-current="page">Overview</a>
+    <a href="01-discounting.html" class="nav-keep">The theory</a>
+    <a href="04-results.html">Results</a>
+    <a href="https://github.com/omarja12/Bootstrap-Yield-Curve" target="_blank" rel="noreferrer">GitHub <span aria-hidden="true">&#8599;</span></a>
+    <a class="nav-cta" href="Bootstrapping_Yield_Curve.ipynb" download>Get the notebook <span aria-hidden="true">&#8599;</span></a>
+  </nav>
+</header>
 
-  <main class="content">
-    <div class="col hero-home">
-      <p class="kicker">Overview</p>
-      <h1>Ten bonds, one curve, three ways of finding it.</h1>
-      <p class="standfirst">A bond&rsquo;s price is the sum of its discounted cash flows. Turn that sentence around and it becomes a question: given the prices, what were the discount factors? This is the answer, worked three separate ways so that each one checks the others.</p>
+<main>
 
-      <div class="home-actions">
-        <a class="btn btn-solid" href="01-discounting.html">Start with the theory</a>
-        <a class="btn" href="04-results.html">Skip to results</a>
-      </div>
-
-      <div class="facts">
-        <div class="fact"><div class="v">10</div><div class="l">Treasury bonds<br>1&ndash;10 years</div></div>
-        <div class="fact"><div class="v">3</div><div class="l">Bootstrap<br>methods</div></div>
-        <div class="fact"><div class="v">0.0000</div><div class="l">Disagreement<br>between them</div></div>
-        <div class="fact"><div class="v">5</div><div class="l">Equity tickers<br>since 2012</div></div>
-      </div>
-
-      <h2>What the project does</h2>
-      <p>The input is a set of ten coupon-bearing government bonds, one maturing each year out to ten years. Each is described by three numbers: how long until it matures, what it costs today, and what coupon it pays. Nothing else.</p>
-      <p>From that, a <code>YieldCurve</code> class recovers the discount-factor curve &mdash; the price today of one unit of currency delivered at each future date &mdash; and from those factors derives the three rate curves that practitioners actually quote: spot rates, yields to maturity, and forward rates.</p>
-      <p>The interesting part is not the answer but the fact that it can be reached three different ways. A direct linear solve, a numerical optimiser and a hand-rolled recursion have almost nothing in common as procedures, yet they agree to four decimals. When independent methods converge, the result is probably not an artefact of the method.</p>
-
-      <div class="callout">
-        <p class="k">The check that matters</p>
-        <p>Multiplying the cash-flow matrix back through the recovered discount factors reproduces all ten market prices <strong>exactly</strong>. A curve that cannot reprice the instruments it was built from is not a curve.</p>
-      </div>
-
-      <h2>Chapters</h2>
-      <div class="chapter-cards">
-        <a class="ch-card" href="01-discounting.html">
-          <span class="n">01</span>
-          <h3>Discounting a bond</h3>
-          <p>Discount factors, the cash-flow matrix, and why pricing ten bonds is one matrix equation.</p>
-        </a>
-        <a class="ch-card" href="02-bootstrapping.html">
-          <span class="n">02</span>
-          <h3>Three ways to bootstrap</h3>
-          <p>The linear solve, the global optimiser and the iterative recursion &mdash; how each works and when they part company.</p>
-        </a>
-        <a class="ch-card" href="03-rates.html">
-          <span class="n">03</span>
-          <h3>Spot, yield and forward</h3>
-          <p>Converting discount factors into the three quoted curves, and why forward rates fall fastest.</p>
-        </a>
-        <a class="ch-card" href="04-results.html">
-          <span class="n">04</span>
-          <h3>Results</h3>
-          <p>The recovered curve, the numbers behind it, and an interactive view of both.</p>
-        </a>
-        <a class="ch-card" href="05-equities.html">
-          <span class="n">05</span>
-          <h3>The equity exercise</h3>
-          <p>The project&rsquo;s second half: daily prices, cumulative returns, correlation and a CSV round-trip.</p>
-        </a>
-      </div>
-
-      <div class="pager">
-        <span class="empty"></span>
-        <a class="next" href="01-discounting.html">
-          <div class="dir">Next</div>
-          <div class="t">01 &middot; Discounting a bond</div>
-        </a>
+  <section class="hero-split shell">
+    <div class="reveal">
+      <p class="eyebrow"><span class="eyebrow-dot"></span> FIXED INCOME &nbsp;/&nbsp; COMPUTATIONAL FINANCE</p>
+      <h1>Ten bonds, one <em>curve.</em></h1>
+      <p class="standfirst">The yield curve is the price of time &mdash; what it costs to borrow for one year, or five, or ten. It is never quoted directly; it has to be extracted from the prices of bonds trading in the market. This project extracts one, three independent ways, and checks the three against each other.</p>
+      <div class="hero-actions">
+        <a class="button button-dark" href="01-discounting.html">Start with the theory <span aria-hidden="true">&#8594;</span></a>
+        <a class="button button-line" href="04-results.html">Skip to results</a>
       </div>
     </div>
-  </main>
 
-</div>
+    <div class="hero-visual reveal reveal-delay" role="img" aria-label="Illustration of a humped yield curve falling across maturities">
+      <div class="visual-label">RATE / MATURITY</div>
+      <div class="orbit orbit-a"></div><div class="orbit orbit-b"></div>
+      <div class="visual-axis axis-x"><span>1Y</span><span>4Y</span><span>7Y</span><span>10Y</span></div>
+      <div class="visual-axis axis-y"><span>5.2%</span><span>3.6%</span><span>2.0%</span></div>
+      <svg class="hero-chart" viewBox="0 0 560 360" aria-hidden="true" focusable="false">
+        <path class="chart-grid" d="M38 50H530 M38 128H530 M38 206H530 M38 284H530 M38 50V284 M200 50V284 M360 50V284 M530 50V284"/>
+        <path class="curve" style="stroke:#b8862b" d="M38 92 C86 78, 128 72, 172 76 S300 128, 360 166 S470 232, 530 276"/>
+        <path class="curve" style="stroke:#79b8a6" d="M38 100 C86 88, 128 83, 172 86 S300 124, 360 150 S470 196, 530 232"/>
+        <path class="curve" style="stroke:#cfd8d2" d="M38 106 C86 95, 128 90, 172 93 S300 129, 360 156 S470 204, 530 242"/>
+        <circle cx="172" cy="76" r="4.5" class="curve-point"/>
+        <circle cx="530" cy="276" r="4.5" class="curve-point"/>
+      </svg>
+      <div class="visual-caption">Ten quoted prices<br><strong>one term structure</strong></div>
+    </div>
+  </section>
+
+  <section class="facts" aria-label="Key figures">
+    <div><b>10</b><span>Treasury bonds<br>1&ndash;10 years</span></div>
+    <div><b>3</b><span>Bootstrap<br>methods</span></div>
+    <div><b>0.0000</b><span>Disagreement<br>between them</span></div>
+    <div><b>5</b><span>Equity tickers<br>in part two</span></div>
+  </section>
+
+  <section class="prose body-copy">
+    <h2>The idea, in plain terms</h2>
+    <p>Governments borrow money by selling bonds. A bond is a promise: pay a little each year, then repay the rest at the end. Thousands of them trade every day, and each has a price.</p>
+    <p>Hidden inside those prices is something nobody publishes directly &mdash; the interest rate for <em>every</em> future year. Working it out is called <strong>bootstrapping</strong>: use the one-year bond to pin down the one-year rate, then use that answer to unlock the two-year bond, and so on up the ladder. Each result pulls the next one up behind it.</p>
+    <p>This project does that with ten bonds, and recovers the full picture below.</p>
+  </section>
+
+  <section class="prose">
+    <figure>
+      <div class="frame">
+        <img src="images/all_rates.png" width="1169" height="333" loading="lazy"
+             alt="Three rate curves plotted against maturity from one to ten years. Two lines overlap closely, peaking near 5.1 percent at two years then easing to about 3.9 percent. A third line starts higher at 5.2 percent and falls much more steeply to 2.1 percent.">
+      </div>
+      <figcaption>The recovered curve. Borrowing is dearest around the two-year mark, then gets steadily cheaper &mdash; the market pricing in falling rates ahead.</figcaption>
+    </figure>
+  </section>
+
+  <section class="prose body-copy">
+    <h2>Why do it three ways</h2>
+    <p>The same curve is computed by three methods that share almost no machinery: a direct matrix solve, a numerical optimiser that searches for the best fit, and a step-by-step recursion done the way a trader would do it by hand.</p>
+    <p>They agree. That agreement is the whole point &mdash; a single method can be quietly wrong and look convincing, but three unrelated methods are unlikely to be wrong in the same direction at the same time.</p>
+
+    <div class="callout">
+      <p class="k">The check that matters</p>
+      <p>Run the recovered curve backwards and it reproduces all ten original market prices <strong>exactly</strong>. A curve that cannot reprice the bonds it was built from is not a curve &mdash; and this one can.</p>
+    </div>
+
+    <h2>Read it in order</h2>
+    <p>Five short chapters. The first three build the theory from scratch, assuming nothing; the last two show what came out of it.</p>
+  </section>
+
+  <section class="shell" style="margin-top:10px">
+    <div class="ch-grid">
+      <a class="ch-card" href="01-discounting.html">
+        <span class="n">01</span>
+        <h3>Discounting a bond</h3>
+        <p>Discount factors, the cash-flow matrix, and why pricing ten bonds collapses into one matrix equation.</p>
+        <span class="go">Read &#8594;</span>
+      </a>
+      <a class="ch-card featured" href="02-bootstrapping.html">
+        <span class="n">02</span>
+        <h3>Three ways to bootstrap</h3>
+        <p>The linear solve, the global optimiser and the iterative recursion &mdash; how each works, and where they part company.</p>
+        <span class="go">Read &#8594;</span>
+      </a>
+      <a class="ch-card" href="03-rates.html">
+        <span class="n">03</span>
+        <h3>Spot, yield and forward</h3>
+        <p>Turning discount factors into the three quoted curves, and why the forward curve falls fastest.</p>
+        <span class="go">Read &#8594;</span>
+      </a>
+      <a class="ch-card" href="04-results.html">
+        <span class="n">04</span>
+        <h3>Results</h3>
+        <p>The recovered curve, every number behind it, and an interactive view of both.</p>
+        <span class="go">Read &#8594;</span>
+      </a>
+      <a class="ch-card" href="05-equities.html">
+        <span class="n">05</span>
+        <h3>The equity exercise</h3>
+        <p>Part two: daily prices, cumulative returns, correlation on returns, and a CSV round-trip.</p>
+        <span class="go">Read &#8594;</span>
+      </a>
+    </div>
+  </section>
+
+</main>
+
+<footer class="site-footer">
+  <div class="shell">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <span class="wordmark"><span class="wordmark-mark">Y</span><span>THE YIELD CURVE</span></span>
+        <p class="footer-blurb">Recovering a discount curve from ten coupon bonds, three independent ways &mdash; and what the resulting rates say about the shape of the term structure.</p>
+      </div>
+      <div class="footer-col">
+        <h4>Chapters</h4>
+        <ul>
+          <li><a href="01-discounting.html">01 &middot; Discounting a bond</a></li>
+          <li><a href="02-bootstrapping.html">02 &middot; Three ways to bootstrap</a></li>
+          <li><a href="03-rates.html">03 &middot; Spot, yield and forward</a></li>
+          <li><a href="04-results.html">04 &middot; Results</a></li>
+          <li><a href="05-equities.html">05 &middot; The equity exercise</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Project</h4>
+        <ul>
+          <li><a href="https://github.com/omarja12/Bootstrap-Yield-Curve">Source on GitHub</a></li>
+          <li><a href="Bootstrapping_Yield_Curve.ipynb" download>Download the notebook</a></li>
+          <li><a href="https://github.com/omarja12/Bootstrap-Yield-Curve/blob/main/LICENSE">Licence</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>THE YIELD CURVE &mdash; COMPUTATIONAL FINANCE</span>
+      <span><a href="https://github.com/omarja12">GITHUB</a> &nbsp;&middot;&nbsp; GPL-3.0</span>
+    </div>
+  </div>
+</footer>
+
 <script src="site.js"></script>
 </body>
 </html>

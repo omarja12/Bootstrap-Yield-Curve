@@ -13,7 +13,7 @@
   var M = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 
   /* Categorical slots validated for CVD separation and >=3:1 contrast
-     against the #ffffff card surface. */
+     against the #fbf8f0 card surface. */
   var VIEWS = {
     rates: {
       title: 'Rates in % by maturity',
@@ -21,7 +21,7 @@
       lines: [
         { name: 'Spot',    color: '#c4452c', x: M,          y: [5.07, 5.14, 5.11, 5.00, 4.85, 4.67, 4.47, 4.27, 4.07, 3.87] },
         { name: 'YTM',     color: '#008878', x: M,          y: [5.07, 5.14, 5.11, 5.00, 4.86, 4.69, 4.51, 4.33, 4.15, 3.98] },
-        { name: 'Forward', color: '#9c7212', x: M.slice(1), y: [5.21, 5.04, 4.68, 4.26, 3.78, 3.30, 2.87, 2.45, 2.08] }
+        { name: 'Forward', color: '#a8761a', x: M.slice(1), y: [5.21, 5.04, 4.68, 4.26, 3.78, 3.30, 2.87, 2.45, 2.08] }
       ]
     },
     df: {

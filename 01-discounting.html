@@ -3,52 +3,48 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="theme-color" content="#16181b">
+<meta name="theme-color" content="#1b2a26">
 <meta name="description" content="Discount factors, the cash-flow matrix, and why pricing ten coupon bonds reduces to a single matrix equation.">
-<title>01 · Discounting a bond — Bootstrapping the Yield Curve</title>
+<title>01 · Discounting a bond — The Yield Curve</title>
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Fraunces:opsz,wght@9..144,500;9..144,650&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css">
 <script>window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]},svg:{fontCache:'global'},options:{renderActions:{addMenu:[]}}};</script>
 <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
 </head>
 <body>
-<div class="layout">
 
-  <aside class="sidebar" id="sidebar">
-    <a class="brand" href="index.html">
-      <div class="brand-title">Bootstrapping the Yield Curve</div>
-      <div class="brand-sub">Computational finance &middot; 2022</div>
-    </a>
-    <button class="menu-btn" id="menuBtn" aria-expanded="false" aria-controls="sidebarBody">MENU</button>
-    <div class="sidebar-body" id="sidebarBody">
-      <p class="toc-label">Contents</p>
-      <ul class="toc">
-        <li><a href="index.html"><span class="n">00</span><span>Overview</span></a></li>
-        <li><a href="01-discounting.html" aria-current="page"><span class="n">01</span><span>Discounting a bond</span></a></li>
-        <li><a href="02-bootstrapping.html"><span class="n">02</span><span>Three ways to bootstrap</span></a></li>
-        <li><a href="03-rates.html"><span class="n">03</span><span>Spot, yield and forward</span></a></li>
-        <li><a href="04-results.html"><span class="n">04</span><span>Results</span></a></li>
-        <li><a href="05-equities.html"><span class="n">05</span><span>The equity exercise</span></a></li>
-      </ul>
-      <p class="sidebar-foot">
-        <a href="https://github.com/omarja12/Bootstrap-Yield-Curve">Source on GitHub</a><br>
-        <a href="Bootstrapping_Yield_Curve.ipynb" download>Download the notebook</a><br>
-        GPL-3.0
-      </p>
-    </div>
-  </aside>
+<header class="site-header">
+  <a class="wordmark" href="index.html" aria-label="Home"><span class="wordmark-mark">Y</span><span>THE YIELD CURVE</span></a>
+  <nav class="top-nav" aria-label="Primary">
+    <a href="index.html">Overview</a>
+    <a href="01-discounting.html" class="nav-keep">The theory</a>
+    <a href="04-results.html">Results</a>
+    <a href="https://github.com/omarja12/Bootstrap-Yield-Curve" target="_blank" rel="noreferrer">GitHub <span aria-hidden="true">&#8599;</span></a>
+    <a class="nav-cta" href="Bootstrapping_Yield_Curve.ipynb" download>Get the notebook <span aria-hidden="true">&#8599;</span></a>
+  </nav>
+</header>
 
-  <main class="content">
-    <div class="col">
-      <p class="chapter-mark">Chapter 01</p>
+<nav class="rail" aria-label="Chapters">
+  <div class="rail-inner">
+    <a href="01-discounting.html" aria-current="page"><span class="n">01</span><div class="t">Discounting a bond</div></a>
+    <a href="02-bootstrapping.html"><span class="n">02</span><div class="t">Three ways to bootstrap</div></a>
+    <a href="03-rates.html"><span class="n">03</span><div class="t">Spot, yield and forward</div></a>
+    <a href="04-results.html"><span class="n">04</span><div class="t">Results</div></a>
+    <a href="05-equities.html"><span class="n">05</span><div class="t">The equity exercise</div></a>
+  </div>
+</nav>
+
+<main>
+  <section class="page-hero prose">
+<p class="eyebrow">Chapter 01</p>
       <h1>Discounting a bond</h1>
       <p class="standfirst">Before any curve can be built, one idea has to be fixed: what a future payment is worth today. Everything else in this project is bookkeeping on top of it.</p>
-      <div class="lead-rule"></div>
-
-      <h2>The discount factor</h2>
+  </section>
+  <section class="prose body-copy">
+<h2>The discount factor</h2>
       <p>A <strong>discount factor</strong> \(d_t\) is the price, agreed today, of receiving one unit of currency at time \(t\). It is not a rate and it is not a percentage &mdash; it is a price, and it is the most primitive object in fixed income. If \(d_3 = 0.8612\), then a contract paying &euro;1 in three years is worth 86.12 cents now.</p>
       <p>Discount factors are ordinarily below 1 and decreasing in \(t\): money later is worth less than money now, and money much later is worth less still. Every rate quoted in this project is a re-expression of these numbers.</p>
 
@@ -127,10 +123,42 @@ y = YieldCurve(bonds)   <span class="cmt"># builds the cash-flow matrix C</span>
           <div class="t">02 &middot; Three ways to bootstrap</div>
         </a>
       </div>
-    </div>
-  </main>
+  </section>
+</main>
 
-</div>
+<footer class="site-footer">
+  <div class="shell">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <span class="wordmark"><span class="wordmark-mark">Y</span><span>THE YIELD CURVE</span></span>
+        <p class="footer-blurb">Recovering a discount curve from ten coupon bonds, three independent ways &mdash; and what the resulting rates say about the shape of the term structure.</p>
+      </div>
+      <div class="footer-col">
+        <h4>Chapters</h4>
+        <ul>
+          <li><a href="01-discounting.html">01 &middot; Discounting a bond</a></li>
+          <li><a href="02-bootstrapping.html">02 &middot; Three ways to bootstrap</a></li>
+          <li><a href="03-rates.html">03 &middot; Spot, yield and forward</a></li>
+          <li><a href="04-results.html">04 &middot; Results</a></li>
+          <li><a href="05-equities.html">05 &middot; The equity exercise</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Project</h4>
+        <ul>
+          <li><a href="https://github.com/omarja12/Bootstrap-Yield-Curve">Source on GitHub</a></li>
+          <li><a href="Bootstrapping_Yield_Curve.ipynb" download>Download the notebook</a></li>
+          <li><a href="https://github.com/omarja12/Bootstrap-Yield-Curve/blob/main/LICENSE">Licence</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>THE YIELD CURVE &mdash; COMPUTATIONAL FINANCE</span>
+      <span><a href="https://github.com/omarja12">GITHUB</a> &nbsp;&middot;&nbsp; GPL-3.0</span>
+    </div>
+  </div>
+</footer>
+
 <script src="site.js"></script>
 </body>
 </html>

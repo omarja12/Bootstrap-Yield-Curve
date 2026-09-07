@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#16181b">
+<meta name="description" content="Three ways to recover discount factors from bond prices: a direct linear solve, a global optimiser, and forward substitution.">
+<title>02 · Three ways to bootstrap — Bootstrapping the Yield Curve</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<script>window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]},svg:{fontCache:'global'},options:{renderActions:{addMenu:[]}}};</script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+</head>
+<body>
+<div class="layout">
+
+  <aside class="sidebar" id="sidebar">
+    <a class="brand" href="index.html">
+      <div class="brand-title">Bootstrapping the Yield Curve</div>
+      <div class="brand-sub">Computational finance &middot; 2022</div>
+    </a>
+    <button class="menu-btn" id="menuBtn" aria-expanded="false" aria-controls="sidebarBody">MENU</button>
+    <div class="sidebar-body" id="sidebarBody">
+      <p class="toc-label">Contents</p>
+      <ul class="toc">
+        <li><a href="index.html"><span class="n">00</span><span>Overview</span></a></li>
+        <li><a href="01-discounting.html"><span class="n">01</span><span>Discounting a bond</span></a></li>
+        <li><a href="02-bootstrapping.html" aria-current="page"><span class="n">02</span><span>Three ways to bootstrap</span></a></li>
+        <li><a href="03-rates.html"><span class="n">03</span><span>Spot, yield and forward</span></a></li>
+        <li><a href="04-results.html"><span class="n">04</span><span>Results</span></a></li>
+        <li><a href="05-equities.html"><span class="n">05</span><span>The equity exercise</span></a></li>
+      </ul>
+      <p class="sidebar-foot">
+        <a href="https://github.com/omarja12/Bootstrap-Yield-Curve">Source on GitHub</a><br>
+        <a href="Bootstrapping_Yield_Curve.ipynb" download>Download the notebook</a><br>
+        GPL-3.0
+      </p>
+    </div>
+  </aside>
+
+  <main class="content">
+    <div class="col">
+      <p class="chapter-mark">Chapter 02</p>
+      <h1>Three ways to bootstrap</h1>
+      <p class="standfirst">The pricing identity \(C\mathbf{d} = \mathbf{P}\) has one solution. Getting to it is a choice, and the three routes taken here have almost nothing in common.</p>
+      <div class="lead-rule"></div>
+
+      <h2>Method one &mdash; the linear solve</h2>
+      <p>The cash-flow matrix is square and invertible, so the honest first move is simply to solve the system. Formally that is \(\mathbf{d} = C^{-1}\mathbf{P}\), though in practice one never forms the inverse:</p>
+
+      <div class="eq">
+        <span class="eq-tag">Direct solution</span>
+        <div class="eq-body">\[ \mathbf{d} \;=\; C^{-1}\mathbf{P} \]</div>
+        <p class="eq-note">Computed with a factorisation rather than an explicit inverse &mdash; faster, and numerically better behaved.</p>
+      </div>
+
+<pre><code>df = np.linalg.solve(self.cash_flows, self.bonds[:, 1])</code></pre>
+
+      <p>This is exact up to floating-point rounding. There is no tolerance to set, no starting guess, no iteration count. For a square, well-conditioned system it is the right answer and it is the baseline the other two are measured against.</p>
+
+      <div class="note">
+        <b>Why not <code>np.linalg.inv</code>?</b> Inverting and then multiplying does more arithmetic and accumulates more error than solving directly. The result is the same in exact arithmetic and slightly worse in floating point &mdash; a small habit that matters on larger systems.
+      </div>
+
+      <h2>Method two &mdash; the global solver</h2>
+      <p>The second route abandons linear algebra and treats the problem as optimisation. Rather than asking &ldquo;what \(\mathbf{d}\) satisfies the equations&rdquo;, it asks &ldquo;what \(\mathbf{d}\) makes the model prices closest to the market prices&rdquo;:</p>
+
+      <div class="eq">
+        <span class="eq-tag">Least-squares formulation</span>
+        <div class="eq-body">\[ \mathbf{d}^{*} \;=\; \arg\min_{\mathbf{d}} \;\bigl\lVert C\mathbf{d} - \mathbf{P} \bigr\rVert^{2} \]</div>
+        <p class="eq-note">Minimise the sum of squared pricing errors. At the optimum the residual is zero, because an exact solution exists.</p>
+      </div>
+
+<pre><code>result = minimize(lambda d: np.sum((self.cash_flows @ d - prices) ** 2),
+                  x0=np.ones(n))</code></pre>
+
+      <p>For this problem the optimiser is doing more work than necessary &mdash; it is searching a ten-dimensional space for a point that could have been computed directly. It earns its place for a different reason: it is the only one of the three that still works when the problem stops being square.</p>
+      <p>Real curve construction is rarely square. Markets quote more instruments than there are nodes on the curve, maturities overlap and gap, and no exact solution exists. The system becomes overdetermined and the question changes from &ldquo;solve&rdquo; to &ldquo;fit&rdquo;. The linear solve has nothing to say there; least squares carries over unchanged.</p>
+
+      <h2>Method three &mdash; forward substitution</h2>
+      <p>The third route uses the shape of \(C\). Because the matrix is lower-triangular, the first equation contains a single unknown. The one-year bond pays exactly once, at maturity:</p>
+
+      <div class="eq">
+        <span class="eq-tag">First step</span>
+        <div class="eq-body">\[ d_1 \;=\; \frac{P_1}{c_1 + F} \]</div>
+      </div>
+
+      <p>With \(d_1\) known, the two-year bond&rsquo;s equation now has one unknown left, and so on down the ladder. In general, once \(d_1,\dots,d_{k-1}\) are known:</p>
+
+      <div class="eq">
+        <span class="eq-tag">The recursion</span>
+        <div class="eq-body">\[ d_k \;=\; \frac{P_k \;-\; c_k \displaystyle\sum_{j=1}^{k-1} d_j}{c_k + F} \]</div>
+        <p class="eq-note">Strip out the coupons already accounted for, then divide what remains by the final payment.</p>
+      </div>
+
+      <p>This is bootstrapping in the original sense &mdash; each maturity pulling the next one up behind it. It is how the curve was built before anyone had a matrix library, and it is still how it is explained on a whiteboard, because each step has a plain reading: what is left of this bond&rsquo;s price once its earlier coupons are paid for at prices already established.</p>
+
+      <h2>Do they agree?</h2>
+      <p>Yes &mdash; to four decimal places, which is every digit the notebook prints:</p>
+
+      <div class="tablewrap">
+        <table>
+          <caption>Discount factors from each method. The rows are identical.</caption>
+          <thead><tr><th>Method</th><th>1Y</th><th>2Y</th><th>3Y</th><th>4Y</th><th>5Y</th><th>6Y</th><th>7Y</th><th>8Y</th><th>9Y</th><th>10Y</th></tr></thead>
+          <tbody>
+            <tr><td>Matrix</td><td>0.9517</td><td>0.9046</td><td>0.8612</td><td>0.8227</td><td>0.7892</td><td>0.7604</td><td>0.7361</td><td>0.7156</td><td>0.6985</td><td>0.6842</td></tr>
+            <tr><td>Global solver</td><td>0.9517</td><td>0.9046</td><td>0.8612</td><td>0.8227</td><td>0.7892</td><td>0.7604</td><td>0.7361</td><td>0.7156</td><td>0.6985</td><td>0.6842</td></tr>
+            <tr><td>Iterative</td><td>0.9517</td><td>0.9046</td><td>0.8612</td><td>0.8227</td><td>0.7892</td><td>0.7604</td><td>0.7361</td><td>0.7156</td><td>0.6985</td><td>0.6842</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>Agreement to four decimals is a weaker statement than it looks, and worth being precise about. The matrix solve and the recursion are both exact procedures; they differ only in the order they do the arithmetic, so they agree to the last bit a <code>float64</code> can represent. The optimiser is different in kind &mdash; it stops when its convergence tolerance is met, not when the residual is zero. It lands very close, but its agreement is a property of the tolerance it was given, not of the mathematics.</p>
+
+      <div class="callout">
+        <p class="k">The stronger test</p>
+        <p>Methods agreeing with each other only shows they made the same assumptions. The test that actually bites is repricing: push the recovered factors back through the cash-flow matrix and check that all ten <strong>market prices</strong> come back. They do &mdash; exactly.</p>
+      </div>
+
+<pre><code>y.cash_flows @ y.DiscountFactors('Matrix operations')
+<span class="cmt"># [96.6000 93.7100 91.5600 90.2400 89.7400 90.0400 91.0900 92.8200 95.1900 98.1400]</span></code></pre>
+
+      <p>Those are the input prices, returned unchanged. The curve reprices the instruments it was built from, which is the minimum any curve must do before it is used for anything else.</p>
+
+      <div class="pager">
+        <a href="01-discounting.html">
+          <div class="dir">Previous</div>
+          <div class="t">01 &middot; Discounting a bond</div>
+        </a>
+        <a class="next" href="03-rates.html">
+          <div class="dir">Next</div>
+          <div class="t">03 &middot; Spot, yield and forward</div>
+        </a>
+      </div>
+    </div>
+  </main>
+
+</div>
+<script src="site.js"></script>
+</body>
+</html>

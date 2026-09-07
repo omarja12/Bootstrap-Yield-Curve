@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#16181b">
+<meta name="description" content="The recovered discount-factor curve, the three rate curves derived from it, and the numbers behind them.">
+<title>04 · Results — Bootstrapping the Yield Curve</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="layout">
+
+  <aside class="sidebar" id="sidebar">
+    <a class="brand" href="index.html">
+      <div class="brand-title">Bootstrapping the Yield Curve</div>
+      <div class="brand-sub">Computational finance &middot; 2022</div>
+    </a>
+    <button class="menu-btn" id="menuBtn" aria-expanded="false" aria-controls="sidebarBody">MENU</button>
+    <div class="sidebar-body" id="sidebarBody">
+      <p class="toc-label">Contents</p>
+      <ul class="toc">
+        <li><a href="index.html"><span class="n">00</span><span>Overview</span></a></li>
+        <li><a href="01-discounting.html"><span class="n">01</span><span>Discounting a bond</span></a></li>
+        <li><a href="02-bootstrapping.html"><span class="n">02</span><span>Three ways to bootstrap</span></a></li>
+        <li><a href="03-rates.html"><span class="n">03</span><span>Spot, yield and forward</span></a></li>
+        <li><a href="04-results.html" aria-current="page"><span class="n">04</span><span>Results</span></a></li>
+        <li><a href="05-equities.html"><span class="n">05</span><span>The equity exercise</span></a></li>
+      </ul>
+      <p class="sidebar-foot">
+        <a href="https://github.com/omarja12/Bootstrap-Yield-Curve">Source on GitHub</a><br>
+        <a href="Bootstrapping_Yield_Curve.ipynb" download>Download the notebook</a><br>
+        GPL-3.0
+      </p>
+    </div>
+  </aside>
+
+  <main class="content">
+    <div class="col">
+      <p class="chapter-mark">Chapter 04</p>
+      <h1>Results</h1>
+      <p class="standfirst">Thirty input numbers &mdash; ten maturities, ten prices, ten coupons &mdash; produce a discount curve and three rate curves. Here is what came out.</p>
+      <div class="lead-rule"></div>
+
+      <h2>The curve, both ways</h2>
+      <p>The same curve can be shown as discount factors or as rates. The factors fall smoothly from 0.9517 to 0.6842; the rates derived from them are far more expressive, because differentiating a smooth falling series exaggerates its shape.</p>
+
+      <div class="switch" role="group" aria-label="Choose what to plot">
+        <button class="active" data-view="rates" aria-pressed="true">Rates</button>
+        <button data-view="df" aria-pressed="false">Discount factors</button>
+      </div>
+
+      <div class="chart-card">
+        <div class="chart-head">
+          <span class="chart-title" id="chart-title">Rates in % by maturity</span>
+          <span class="legend" id="legend"></span>
+        </div>
+        <svg id="chart" role="img" aria-labelledby="chart-title"></svg>
+        <div id="tip" role="status" aria-live="polite"></div>
+      </div>
+
+      <p>Hovering reads off the exact value at each maturity. The full table is below if you would rather have all of it at once.</p>
+
+      <h2>What the shape says</h2>
+      <p>Spot and yield rise slightly to a peak of 5.14% at two years, then decline steadily to 3.87% and 3.98% respectively. This is a <strong>humped curve</strong>: short rates elevated, a small bump in the near term, then a long descent.</p>
+      <p>The forward curve tells the same story more loudly. It begins above both others at 5.21% and ends at 2.08% &mdash; a fall of 3.13 points against the spot curve&rsquo;s 1.20. As Chapter 03 sets out, that is arithmetic rather than a separate opinion: spot rates are the geometric average of forwards, and an average moves less than the thing it averages.</p>
+
+      <div class="callout">
+        <p class="k">Where the curves separate</p>
+        <p>Spot and YTM are identical at one year (both <strong>5.07%</strong>) and drift apart from year five, reaching an 11 basis-point gap at ten years. A one-year bond pays once, so its yield <em>is</em> its spot rate. The gap only opens once there are enough coupons for the curve&rsquo;s slope to bite.</p>
+      </div>
+
+      <h2>Every number</h2>
+      <div class="tablewrap">
+        <table>
+          <caption>Complete output of the original run. Rates in percent; discount factors are unitless prices.</caption>
+          <thead><tr><th>Maturity</th><th>1Y</th><th>2Y</th><th>3Y</th><th>4Y</th><th>5Y</th><th>6Y</th><th>7Y</th><th>8Y</th><th>9Y</th><th>10Y</th></tr></thead>
+          <tbody>
+            <tr><td>Price</td><td>96.60</td><td>93.71</td><td>91.56</td><td>90.24</td><td>89.74</td><td>90.04</td><td>91.09</td><td>92.82</td><td>95.19</td><td>98.14</td></tr>
+            <tr><td>Coupon %</td><td>1.50</td><td>1.75</td><td>2.00</td><td>2.25</td><td>2.50</td><td>2.75</td><td>3.00</td><td>3.25</td><td>3.50</td><td>3.75</td></tr>
+            <tr><td>Discount factor</td><td>0.9517</td><td>0.9046</td><td>0.8612</td><td>0.8227</td><td>0.7892</td><td>0.7604</td><td>0.7361</td><td>0.7156</td><td>0.6985</td><td>0.6842</td></tr>
+            <tr><td>Spot %</td><td>5.07</td><td>5.14</td><td>5.11</td><td>5.00</td><td>4.85</td><td>4.67</td><td>4.47</td><td>4.27</td><td>4.07</td><td>3.87</td></tr>
+            <tr><td>YTM %</td><td>5.07</td><td>5.14</td><td>5.11</td><td>5.00</td><td>4.86</td><td>4.69</td><td>4.51</td><td>4.33</td><td>4.15</td><td>3.98</td></tr>
+            <tr><td>1y forward %</td><td>&mdash;</td><td>5.21</td><td>5.04</td><td>4.68</td><td>4.26</td><td>3.78</td><td>3.30</td><td>2.87</td><td>2.45</td><td>2.08</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2>As the notebook drew it</h2>
+      <figure>
+        <div class="frame">
+          <img src="images/all_rates.png" width="1169" height="333" loading="lazy"
+               alt="Line chart of spot, YTM and forward rates against residual maturity from 1 to 10 years. Spot and YTM overlap closely, peaking near 5.14% at year 2 and declining to about 3.9%. The forward line starts at 5.21% and falls much more steeply to 2.08%.">
+        </div>
+        <figcaption>All three rate curves on one axis &mdash; output of the original run.</figcaption>
+      </figure>
+
+      <p>Each series was also plotted alone:
+        <a href="images/spot_rates.png">spot rates</a>,
+        <a href="images/yield_to_maturity.png">yield to maturity</a>,
+        <a href="images/forward_rates.png">forward rates</a>.
+      </p>
+
+      <div class="pager">
+        <a href="03-rates.html">
+          <div class="dir">Previous</div>
+          <div class="t">03 &middot; Spot, yield and forward</div>
+        </a>
+        <a class="next" href="05-equities.html">
+          <div class="dir">Next</div>
+          <div class="t">05 &middot; The equity exercise</div>
+        </a>
+      </div>
+    </div>
+  </main>
+
+</div>
+<script src="site.js"></script>
+<script src="chart.js"></script>
+</body>
+</html>

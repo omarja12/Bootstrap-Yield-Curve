@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#16181b">
+<meta name="description" content="The project's second half: daily prices for five tickers, cumulative returns, a correlation matrix and a CSV round-trip.">
+<title>05 · The equity exercise — Bootstrapping the Yield Curve</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<script>window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]},svg:{fontCache:'global'},options:{renderActions:{addMenu:[]}}};</script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+</head>
+<body>
+<div class="layout">
+
+  <aside class="sidebar" id="sidebar">
+    <a class="brand" href="index.html">
+      <div class="brand-title">Bootstrapping the Yield Curve</div>
+      <div class="brand-sub">Computational finance &middot; 2022</div>
+    </a>
+    <button class="menu-btn" id="menuBtn" aria-expanded="false" aria-controls="sidebarBody">MENU</button>
+    <div class="sidebar-body" id="sidebarBody">
+      <p class="toc-label">Contents</p>
+      <ul class="toc">
+        <li><a href="index.html"><span class="n">00</span><span>Overview</span></a></li>
+        <li><a href="01-discounting.html"><span class="n">01</span><span>Discounting a bond</span></a></li>
+        <li><a href="02-bootstrapping.html"><span class="n">02</span><span>Three ways to bootstrap</span></a></li>
+        <li><a href="03-rates.html"><span class="n">03</span><span>Spot, yield and forward</span></a></li>
+        <li><a href="04-results.html"><span class="n">04</span><span>Results</span></a></li>
+        <li><a href="05-equities.html" aria-current="page"><span class="n">05</span><span>The equity exercise</span></a></li>
+      </ul>
+      <p class="sidebar-foot">
+        <a href="https://github.com/omarja12/Bootstrap-Yield-Curve">Source on GitHub</a><br>
+        <a href="Bootstrapping_Yield_Curve.ipynb" download>Download the notebook</a><br>
+        GPL-3.0
+      </p>
+    </div>
+  </aside>
+
+  <main class="content">
+    <div class="col">
+      <p class="chapter-mark">Chapter 05</p>
+      <h1>The equity exercise</h1>
+      <p class="standfirst">The project&rsquo;s second half leaves rates behind for a data-handling problem: fetch it, transform it, store it, get it back unchanged.</p>
+      <div class="lead-rule"></div>
+
+      <h2>The task</h2>
+      <p>Daily closing prices and volumes for five large-cap tickers &mdash; <code>AAPL</code>, <code>IBM</code>, <code>MSFT</code>, <code>GOOG</code> and <code>AMZN</code> &mdash; pulled from Yahoo Finance through <code>pandas_datareader</code>, starting 1 January 2012. The first observations land on 3 January 2012, the first trading day of that year.</p>
+
+<pre><code>tickers = ['AAPL', 'IBM', 'MSFT', 'GOOG', 'AMZN']
+all_data = {ticker: pdr.get_data_yahoo(ticker, start=datetime(2012, 1, 1))
+            for ticker in tickers}
+
+price  = pd.DataFrame({t: d['Close']  for t, d in all_data.items()})
+volume = pd.DataFrame({t: d['Volume'] for t, d in all_data.items()})</code></pre>
+
+      <p>Closes and volumes are split into two frames keyed by ticker, then later concatenated back into one frame with a two-level column index &mdash; <code>price</code> above, <code>volume</code> below.</p>
+
+      <h2>Returns and cumulative returns</h2>
+      <p>Daily simple returns come from the percentage change of the close, and the cumulative series is their running compounded product &mdash; a currency unit invested at the start, tracked forward:</p>
+
+      <div class="eq">
+        <span class="eq-tag">Cumulative return</span>
+        <div class="eq-body">\[ R_T \;=\; \prod_{t=1}^{T}\bigl(1 + r_t\bigr) \qquad\text{where}\qquad r_t = \frac{P_t}{P_{t-1}} - 1 \]</div>
+        <p class="eq-note">Compounded, not summed &mdash; a 50% loss followed by a 50% gain does not return to par.</p>
+      </div>
+
+      <figure>
+        <div class="frame">
+          <img src="images/cumulative_returns.png" width="1175" height="366" loading="lazy"
+               alt="Cumulative returns for AAPL, IBM, MSFT, GOOG and AMZN from January 2012 onward. All rise over the period, with AAPL and AMZN ending far above the others and IBM lowest.">
+        </div>
+        <figcaption>Cumulative returns from January 2012 &mdash; output of the original run.</figcaption>
+      </figure>
+
+      <p>The spread is wide, which is the point of plotting them together: five stocks from broadly the same sector, held over the same window, ending in very different places.</p>
+
+      <h2>Correlation</h2>
+      <p>The correlation matrix is taken on <em>daily returns</em>, not on prices. This distinction matters more than it looks. Price series are non-stationary and drift upward together, so correlating them measures little beyond &ldquo;both went up over ten years&rdquo;. Returns are close to stationary, and their correlation measures what is actually of interest: whether these names move together day to day.</p>
+
+      <div class="eq">
+        <span class="eq-tag">Pearson correlation</span>
+        <div class="eq-body">\[ \rho_{ij} \;=\; \frac{\operatorname{Cov}(r_i,\,r_j)}{\sigma_i\,\sigma_j} \]</div>
+        <p class="eq-note">Covariance normalised by both standard deviations, giving a number in \([-1, 1]\).</p>
+      </div>
+
+<pre><code>returns = price.pct_change().dropna()
+returns.corr().style.background_gradient(cmap='viridis')</code></pre>
+
+      <div class="note">
+        <b>Why it matters downstream.</b> This matrix is the input to portfolio construction: diversification comes from low off-diagonal terms. Five tech names in one window will correlate strongly, which is a useful negative result &mdash; it shows how little diversification a sector-concentrated basket actually buys.
+      </div>
+
+      <h2>The round-trip</h2>
+      <p>The last part is deliberately unglamorous. Write one CSV per ticker holding its price and volume, then read them all back and rebuild a single frame of prices:</p>
+
+<pre><code><span class="cmt"># out: one file per ticker</span>
+for ticker in tickers:
+    pd.concat([price[ticker], volume[ticker]], axis=1,
+              keys=['price', 'volume']).to_csv(f'{ticker}.csv')
+
+<span class="cmt"># back in: recombined on the Date index</span>
+frames = (pd.read_csv(f'{ticker}.csv', usecols=['Date', 'price'],
+                      index_col='Date') for ticker in tickers)
+price = pd.concat(frames, axis=1)
+price.columns = tickers</code></pre>
+
+      <p>The exercise is the round-trip itself: the recovered frame has to match what was written, with the date index intact and the columns correctly re-labelled. Serialisation is where index handling and column naming quietly go wrong, and the check is that nothing changed on the way out and back.</p>
+
+      <div class="callout">
+        <p class="k">The thread between the halves</p>
+        <p>The two exercises look unrelated but share a shape. Each recovers something from market observations &mdash; a discount curve from prices, a correlation structure from returns &mdash; and each is validated by <strong>reconstruction</strong>: reprice the bonds, reload the frame. Getting an answer is easy; showing it survives a round-trip is the work.</p>
+      </div>
+
+      <div class="pager">
+        <a href="04-results.html">
+          <div class="dir">Previous</div>
+          <div class="t">04 &middot; Results</div>
+        </a>
+        <a class="next" href="index.html">
+          <div class="dir">Back to</div>
+          <div class="t">00 &middot; Overview</div>
+        </a>
+      </div>
+    </div>
+  </main>
+
+</div>
+<script src="site.js"></script>
+</body>
+</html>

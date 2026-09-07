@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#16181b">
+<meta name="description" content="Discount factors, the cash-flow matrix, and why pricing ten coupon bonds reduces to a single matrix equation.">
+<title>01 · Discounting a bond — Bootstrapping the Yield Curve</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<script>window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]},svg:{fontCache:'global'},options:{renderActions:{addMenu:[]}}};</script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+</head>
+<body>
+<div class="layout">
+
+  <aside class="sidebar" id="sidebar">
+    <a class="brand" href="index.html">
+      <div class="brand-title">Bootstrapping the Yield Curve</div>
+      <div class="brand-sub">Computational finance &middot; 2022</div>
+    </a>
+    <button class="menu-btn" id="menuBtn" aria-expanded="false" aria-controls="sidebarBody">MENU</button>
+    <div class="sidebar-body" id="sidebarBody">
+      <p class="toc-label">Contents</p>
+      <ul class="toc">
+        <li><a href="index.html"><span class="n">00</span><span>Overview</span></a></li>
+        <li><a href="01-discounting.html" aria-current="page"><span class="n">01</span><span>Discounting a bond</span></a></li>
+        <li><a href="02-bootstrapping.html"><span class="n">02</span><span>Three ways to bootstrap</span></a></li>
+        <li><a href="03-rates.html"><span class="n">03</span><span>Spot, yield and forward</span></a></li>
+        <li><a href="04-results.html"><span class="n">04</span><span>Results</span></a></li>
+        <li><a href="05-equities.html"><span class="n">05</span><span>The equity exercise</span></a></li>
+      </ul>
+      <p class="sidebar-foot">
+        <a href="https://github.com/omarja12/Bootstrap-Yield-Curve">Source on GitHub</a><br>
+        <a href="Bootstrapping_Yield_Curve.ipynb" download>Download the notebook</a><br>
+        GPL-3.0
+      </p>
+    </div>
+  </aside>
+
+  <main class="content">
+    <div class="col">
+      <p class="chapter-mark">Chapter 01</p>
+      <h1>Discounting a bond</h1>
+      <p class="standfirst">Before any curve can be built, one idea has to be fixed: what a future payment is worth today. Everything else in this project is bookkeeping on top of it.</p>
+      <div class="lead-rule"></div>
+
+      <h2>The discount factor</h2>
+      <p>A <strong>discount factor</strong> \(d_t\) is the price, agreed today, of receiving one unit of currency at time \(t\). It is not a rate and it is not a percentage &mdash; it is a price, and it is the most primitive object in fixed income. If \(d_3 = 0.8612\), then a contract paying &euro;1 in three years is worth 86.12 cents now.</p>
+      <p>Discount factors are ordinarily below 1 and decreasing in \(t\): money later is worth less than money now, and money much later is worth less still. Every rate quoted in this project is a re-expression of these numbers.</p>
+
+      <div class="note">
+        <b>Why start here rather than with rates?</b> Rates depend on a compounding convention &mdash; annual, semi-annual, continuous &mdash; and the same curve quoted two ways gives two different sets of numbers. Discount factors carry no convention. They are what the market actually prices.
+      </div>
+
+      <h2>Pricing one bond</h2>
+      <p>A coupon bond is a bundle of dated payments: a coupon \(c\) each year, and at maturity the coupon plus the face value \(F\). Its fair price is the sum of those payments, each multiplied by the discount factor for its own date:</p>
+
+      <div class="eq">
+        <span class="eq-tag">Price of a single bond</span>
+        <div class="eq-body">\[ P \;=\; \sum_{t=1}^{m-1} c\,d_t \;+\; (c + F)\,d_m \]</div>
+        <p class="eq-note">\(m\) is the maturity in years, \(c\) the annual coupon in currency, \(F\) the face value &mdash; here 100 for every bond.</p>
+      </div>
+
+      <p>Read left to right this is a pricing formula: given the discount factors, produce the price. The project reads it right to left. The prices are observed in the market; the discount factors are the unknowns.</p>
+
+      <h2>Pricing ten bonds at once</h2>
+      <p>One bond gives one equation with \(m\) unknowns &mdash; hopeless on its own. The way out is to use a set of bonds whose maturities line up with the dates being solved for. Ten bonds maturing at years 1 through 10 give ten equations in exactly ten unknowns.</p>
+      <p>Collect the payments into a matrix. Let \(C_{ij}\) be the cash flow that bond \(i\) pays at time \(j\):</p>
+
+      <div class="eq">
+        <span class="eq-tag">Cash-flow matrix</span>
+        <div class="eq-body">\[ C_{ij} \;=\; \begin{cases} c_i & j &lt; m_i \\[2pt] c_i + F & j = m_i \\[2pt] 0 & j &gt; m_i \end{cases} \]</div>
+        <p class="eq-note">Row \(i\) is one bond&rsquo;s payment schedule. It runs at the coupon level until maturity, jumps by the face value in the maturity column, and is zero afterwards &mdash; so \(C\) is lower-triangular.</p>
+      </div>
+
+      <p>With \(\mathbf{d}\) the vector of unknown discount factors and \(\mathbf{P}\) the vector of observed prices, the ten pricing equations collapse into a single statement:</p>
+
+      <div class="eq">
+        <span class="eq-tag">The pricing identity</span>
+        <div class="eq-body">\[ C\,\mathbf{d} \;=\; \mathbf{P} \]</div>
+        <p class="eq-note">Ten equations, ten unknowns, one square matrix. Everything in the next chapter is a different way of getting \(\mathbf{d}\) out of this.</p>
+      </div>
+
+      <h2>Why the triangular shape matters</h2>
+      <p>Because \(C\) is lower-triangular with non-zero entries on its diagonal &mdash; every bond pays back its face value at its own maturity, so \(C_{ii} = c_i + F \geq 100\) &mdash; it is guaranteed invertible. The system has exactly one solution, and it is well conditioned. That is not luck; it is the reason the bond set was chosen with one maturity per year.</p>
+      <p>The triangularity also hands us the third method for free. The first row involves only \(d_1\), so \(d_1\) can be read off directly. The second row then involves only \(d_1\) and \(d_2\), and \(d_1\) is already known. Substituting forward one row at a time solves the whole system without ever forming an inverse. That recursion is what &ldquo;bootstrapping&rdquo; originally meant, and it is where the name comes from.</p>
+
+      <h2>The bonds used here</h2>
+      <p>Ten government bonds, face value 100, one maturing each year. Prices sit below par at the short end and rise back toward par further out; coupons step evenly from 1.50% to 3.75%.</p>
+
+      <div class="tablewrap">
+        <table>
+          <caption>The complete input. These thirty numbers are the only market data the curve is built from.</caption>
+          <thead><tr><th>Maturity</th><th>1Y</th><th>2Y</th><th>3Y</th><th>4Y</th><th>5Y</th><th>6Y</th><th>7Y</th><th>8Y</th><th>9Y</th><th>10Y</th></tr></thead>
+          <tbody>
+            <tr><td>Price</td><td>96.60</td><td>93.71</td><td>91.56</td><td>90.24</td><td>89.74</td><td>90.04</td><td>91.09</td><td>92.82</td><td>95.19</td><td>98.14</td></tr>
+            <tr><td>Coupon %</td><td>1.50</td><td>1.75</td><td>2.00</td><td>2.25</td><td>2.50</td><td>2.75</td><td>3.00</td><td>3.25</td><td>3.50</td><td>3.75</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>In code the three arrays are stacked into the <code>(10, 3)</code> input the class expects:</p>
+
+<pre><code>maturities = np.arange(1, 11)
+prices     = np.array([96.60, 93.71, 91.56, 90.24, 89.74,
+                       90.04, 91.09, 92.82, 95.19, 98.14])
+coupons    = np.linspace(0.015, 0.0375, num=10)
+
+bonds = np.column_stack((maturities, prices, coupons))
+y = YieldCurve(bonds)   <span class="cmt"># builds the cash-flow matrix C</span></code></pre>
+
+      <div class="note">
+        <b>A note on the prices.</b> Every bond trades below its face value of 100, because each coupon is below the prevailing ~5% short rate. The dip to 89.74 at five years and the climb back to 98.14 at ten is not a quirk of the market &mdash; it is the coupon ladder rising faster than the discount curve falls.
+      </div>
+
+      <div class="pager">
+        <a href="index.html">
+          <div class="dir">Previous</div>
+          <div class="t">00 &middot; Overview</div>
+        </a>
+        <a class="next" href="02-bootstrapping.html">
+          <div class="dir">Next</div>
+          <div class="t">02 &middot; Three ways to bootstrap</div>
+        </a>
+      </div>
+    </div>
+  </main>
+
+</div>
+<script src="site.js"></script>
+</body>
+</html>

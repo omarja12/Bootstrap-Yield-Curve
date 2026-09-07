@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#16181b">
+<meta name="description" content="Turning discount factors into spot rates, yields to maturity and forward rates, and why the forward curve falls fastest.">
+<title>03 · Spot, yield and forward — Bootstrapping the Yield Curve</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<script>window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]},svg:{fontCache:'global'},options:{renderActions:{addMenu:[]}}};</script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+</head>
+<body>
+<div class="layout">
+
+  <aside class="sidebar" id="sidebar">
+    <a class="brand" href="index.html">
+      <div class="brand-title">Bootstrapping the Yield Curve</div>
+      <div class="brand-sub">Computational finance &middot; 2022</div>
+    </a>
+    <button class="menu-btn" id="menuBtn" aria-expanded="false" aria-controls="sidebarBody">MENU</button>
+    <div class="sidebar-body" id="sidebarBody">
+      <p class="toc-label">Contents</p>
+      <ul class="toc">
+        <li><a href="index.html"><span class="n">00</span><span>Overview</span></a></li>
+        <li><a href="01-discounting.html"><span class="n">01</span><span>Discounting a bond</span></a></li>
+        <li><a href="02-bootstrapping.html"><span class="n">02</span><span>Three ways to bootstrap</span></a></li>
+        <li><a href="03-rates.html" aria-current="page"><span class="n">03</span><span>Spot, yield and forward</span></a></li>
+        <li><a href="04-results.html"><span class="n">04</span><span>Results</span></a></li>
+        <li><a href="05-equities.html"><span class="n">05</span><span>The equity exercise</span></a></li>
+      </ul>
+      <p class="sidebar-foot">
+        <a href="https://github.com/omarja12/Bootstrap-Yield-Curve">Source on GitHub</a><br>
+        <a href="Bootstrapping_Yield_Curve.ipynb" download>Download the notebook</a><br>
+        GPL-3.0
+      </p>
+    </div>
+  </aside>
+
+  <main class="content">
+    <div class="col">
+      <p class="chapter-mark">Chapter 03</p>
+      <h1>Spot, yield and forward</h1>
+      <p class="standfirst">Discount factors are what the market prices, but nobody quotes them. Three different rates are read off the same curve, each answering a different question.</p>
+      <div class="lead-rule"></div>
+
+      <h2>Spot rates</h2>
+      <p>The <strong>spot rate</strong> \(s_t\) is the single annually-compounded rate that turns one unit today into the value of one unit at time \(t\). It is defined by inverting the compounding relation:</p>
+
+      <div class="eq">
+        <span class="eq-tag">Spot rate from a discount factor</span>
+        <div class="eq-body">\[ d_t = \frac{1}{(1+s_t)^{t}} \qquad\Longleftrightarrow\qquad s_t = d_t^{-1/t} - 1 \]</div>
+        <p class="eq-note">One discount factor in, one rate out. No other bond is involved.</p>
+      </div>
+
+      <p>The spot curve is the cleanest object of the three. Each point is a pure zero-coupon rate for a single date, uncontaminated by any coupon payments along the way. This is the curve you discount arbitrary future cash flows with.</p>
+
+      <h2>Yield to maturity</h2>
+      <p>The <strong>yield to maturity</strong> is the flat rate that, applied to every one of a bond&rsquo;s cash flows, reproduces its market price. It is the internal rate of return of the bond:</p>
+
+      <div class="eq">
+        <span class="eq-tag">Yield to maturity</span>
+        <div class="eq-body">\[ P \;=\; \sum_{t=1}^{m-1}\frac{c}{(1+y)^{t}} \;+\; \frac{c+F}{(1+y)^{m}} \]</div>
+        <p class="eq-note">Solved numerically for \(y\) &mdash; there is no closed form once a bond has more than a couple of coupons.</p>
+      </div>
+
+      <p>YTM is a summary, not a curve. It compresses a whole schedule of payments into one number by pretending every cash flow is discounted at the same rate, which is exactly what the spot curve says is not true. Two bonds maturing on the same day with different coupons will have different yields, even though they face an identical term structure.</p>
+
+      <div class="note">
+        <b>Why bother with it, then?</b> Because it is the market&rsquo;s quoting convention, and because it is a single comparable number per bond. Its weakness is also its use: it hides the curve, which makes bonds easy to compare and easy to misprice.
+      </div>
+
+      <p>Notice in the results that spot and YTM coincide at one year &mdash; both 5.07%. A one-year bond pays only once, so &ldquo;discount every flow at the same rate&rdquo; and &ldquo;discount the single flow at its own spot rate&rdquo; are the same statement. They separate from year five onward, once there are enough coupons for the shape of the curve to matter.</p>
+
+      <h2>Forward rates</h2>
+      <p>A <strong>forward rate</strong> \(f_{t,t+1}\) is the rate agreed today for borrowing over a future year. It follows from a no-arbitrage argument: investing for \(t+1\) years must return the same as investing for \(t\) years and rolling forward at the agreed rate.</p>
+
+      <div class="eq">
+        <span class="eq-tag">No-arbitrage condition</span>
+        <div class="eq-body">\[ (1+s_{t+1})^{t+1} \;=\; (1+s_t)^{t}\,\bigl(1+f_{t,t+1}\bigr) \]</div>
+      </div>
+
+      <p>Rearranged in terms of the discount factors, it becomes almost trivial &mdash; the forward rate is just the ratio of two neighbouring factors:</p>
+
+      <div class="eq">
+        <span class="eq-tag">Forward rate</span>
+        <div class="eq-body">\[ f_{t,t+1} \;=\; \frac{d_t}{d_{t+1}} - 1 \]</div>
+        <p class="eq-note">Ten discount factors give nine one-year forwards, each spanning the gap between consecutive maturities.</p>
+      </div>
+
+      <h2>Why forwards move fastest</h2>
+      <p>This is the relationship worth carrying away. Rearranging the no-arbitrage condition across all periods shows that compounding the spot rate to time \(t\) is the same as compounding every forward rate up to \(t\):</p>
+
+      <div class="eq">
+        <span class="eq-tag">Spot as an average of forwards</span>
+        <div class="eq-body">\[ (1+s_t)^{t} \;=\; \prod_{k=0}^{t-1}\bigl(1+f_{k,k+1}\bigr) \]</div>
+        <p class="eq-note">The spot rate is the geometric mean of every forward rate out to that date.</p>
+      </div>
+
+      <p>An average always lags the series it averages. When forwards are falling, each new one drags the running mean down only slightly, because it is diluted by all the higher forwards before it. So the spot curve declines gently while the forward curve &mdash; the marginal quantity being averaged &mdash; declines steeply.</p>
+      <p>That is precisely the pattern in this curve. The spot rate drifts from 5.07% to 3.87%, a fall of 1.2 points. Over the same span the forward rate collapses from 5.21% to 2.08%, a fall of more than three points. The forward curve is not a different market view; it is the same view, undiluted.</p>
+
+      <div class="callout">
+        <p class="k">Reading the shape</p>
+        <p>Spot and yield peak near <strong>5.14%</strong> at two years before turning down &mdash; a humped curve. Forwards are already falling by then. Because forwards lead and spots average, <strong>the forward curve turns first</strong>: it is the earlier signal of where the curve is heading.</p>
+      </div>
+
+      <p>All three are computed straight from the factors already recovered:</p>
+
+<pre><code>Srates = y.SpotRates()      <span class="cmt"># d_t ** (-1/t) - 1</span>
+Ytm    = y.BondsYtm()       <span class="cmt"># IRR per bond, via numpy_financial</span>
+Frate  = y.ForwardRates()   <span class="cmt"># d_t / d_(t+1) - 1</span></code></pre>
+
+      <div class="pager">
+        <a href="02-bootstrapping.html">
+          <div class="dir">Previous</div>
+          <div class="t">02 &middot; Three ways to bootstrap</div>
+        </a>
+        <a class="next" href="04-results.html">
+          <div class="dir">Next</div>
+          <div class="t">04 &middot; Results</div>
+        </a>
+      </div>
+    </div>
+  </main>
+
+</div>
+<script src="site.js"></script>
+</body>
+</html>

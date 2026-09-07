@@ -2,496 +2,110 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="theme-color" content="#102a43">
-<meta name="description" content="An archived computational finance project: bootstrapping a Treasury yield curve three different ways.">
-<title>Bootstrap Desk | Yield Curve</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#16181b">
+<meta name="description" content="Bootstrapping a Treasury yield curve from coupon-bearing bonds: the theory, three computational methods, and the results.">
+<title>Bootstrapping the Yield Curve</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Fraunces:opsz,wght@9..144,500;9..144,650&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
-<style>
-:root{
-  --ink:#102a43;--ink-soft:#486581;--paper:#f6f2ea;--white:#fffdf8;
-  --coral:#ec6a58;--coral-dark:#c95749;--aqua:#3cafa5;
-  --line:rgba(16,42,67,.17);
-  --s1:#e05a46;--s2:#0a9b8e;--s3:#c08018;
-  --mono:'DM Mono',ui-monospace,monospace;
-  --display:'Fraunces',Georgia,serif;
-  --body:'Manrope',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
-}
-*{box-sizing:border-box}
-html{scroll-behavior:smooth}
-body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.6}
-a{color:inherit;text-decoration:none}
-button{font:inherit}
-img{max-width:100%}
-.shell{width:min(1160px,calc(100% - 80px));margin-inline:auto}
-
-.site-header{height:82px;display:flex;align-items:center;justify-content:space-between;width:min(1280px,calc(100% - 80px));margin:auto;border-bottom:1px solid var(--line)}
-.wordmark{display:inline-flex;align-items:center;gap:10px;font:500 12px var(--mono);letter-spacing:.05em}
-.wordmark-mark{display:grid;place-items:center;width:30px;height:30px;border:1px solid var(--ink);border-radius:50%;font:650 16px var(--display)}
-.top-nav{display:flex;align-items:center;gap:34px;font-size:13px;color:var(--ink-soft)}
-.top-nav a:hover,.text-link:hover{color:var(--coral-dark)}
-.nav-cta{color:var(--ink);border-bottom:1px solid var(--ink);padding-bottom:4px}
-
-.hero{min-height:600px;display:grid;grid-template-columns:.92fr 1.08fr;gap:80px;align-items:center;padding:78px 0 92px}
-.eyebrow{margin:0 0 21px;color:var(--coral-dark);font:500 11px var(--mono);letter-spacing:.08em}
-.eyebrow-dot{display:inline-block;width:7px;height:7px;margin-right:8px;border-radius:50%;background:var(--coral)}
-h1,h2,h3,p{margin-top:0}
-h1,h2{font-family:var(--display);font-weight:500;line-height:.98}
-h1{max-width:560px;margin-bottom:29px;font-size:clamp(52px,7vw,92px)}
-h1 em,h2 em{color:var(--coral);font-style:italic}
-h2{margin-bottom:25px;font-size:clamp(38px,5vw,62px)}
-.hero-intro{max-width:410px;color:var(--ink-soft);font-size:16px}
-.hero-actions{display:flex;align-items:center;gap:22px;margin-top:35px;flex-wrap:wrap}
-.button{display:inline-flex;align-items:center;gap:22px;padding:15px 19px;font-size:13px;font-weight:700;transition:transform .2s ease}
-.button:hover{transform:translateY(-3px)}
-.button-dark{background:var(--ink);color:var(--white)}
-.hero-note{color:var(--ink-soft);font:11px var(--mono)}
-.hero-visual{min-height:420px;position:relative;overflow:hidden;background:var(--ink);color:var(--paper);border-radius:2px}
-.visual-label{position:absolute;top:27px;left:29px;z-index:2;color:#abc0cf;font:10px var(--mono);letter-spacing:.08em}
-.hero-chart{position:absolute;inset:51px 18px 64px 30px;width:calc(100% - 48px);height:calc(100% - 115px)}
-.chart-grid{fill:none;stroke:rgba(245,242,234,.16);stroke-width:1}
-.curve{fill:none;stroke-width:2.5}
-.curve-point{fill:#ec6a58;stroke:var(--ink);stroke-width:3}
-.visual-axis{position:absolute;color:#abc0cf;font:10px var(--mono)}
-.axis-x{right:28px;bottom:32px;left:31px;display:flex;justify-content:space-between}
-.axis-y{top:83px;bottom:102px;left:10px;display:flex;flex-direction:column;justify-content:space-between;writing-mode:vertical-rl;transform:rotate(180deg)}
-.curve-orbit{position:absolute;border:1px solid rgba(236,106,88,.38);border-radius:50%;transform:rotate(-17deg);pointer-events:none}
-.orbit-one{width:500px;height:180px;right:-170px;bottom:26px}
-.orbit-two{width:420px;height:150px;right:-100px;bottom:79px;border-color:rgba(60,175,165,.3)}
-.orbit-three{width:590px;height:240px;right:-225px;bottom:-15px;border-color:rgba(255,253,248,.17)}
-.visual-caption{position:absolute;left:29px;bottom:28px;color:#abc0cf;font:11px var(--mono);line-height:1.4}
-.visual-caption strong{color:var(--paper);font-weight:400}
-
-.ticker{display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:22px max(40px,calc((100% - 1160px)/2));gap:25px}
-.ticker div{display:flex;align-items:baseline;gap:11px;color:var(--ink-soft);font:10px var(--mono);text-transform:uppercase}
-.ticker-number{color:var(--ink);font:650 25px var(--display)}
-
-.section{padding:118px 0 125px}
-.section-heading{display:flex;justify-content:space-between;align-items:end;gap:50px;margin-bottom:52px}
-.section-heading h2{margin-bottom:0}
-.section-description{max-width:345px;margin-bottom:5px;color:var(--ink-soft);font-size:14px}
-
-.explorer-grid{display:grid;grid-template-columns:1fr 235px;gap:1px;background:var(--ink);border:1px solid var(--ink)}
-.chart-panel{min-height:465px;padding:25px 28px 20px;background:var(--white);position:relative}
-.panel-topline{display:flex;justify-content:space-between;align-items:center;color:var(--ink-soft);font:11px var(--mono);flex-wrap:wrap;gap:10px}
-.legend{display:flex;align-items:center;gap:16px}
-.legend span{display:inline-flex;align-items:center;gap:7px}
-.legend i{width:17px;height:3px;border-radius:2px;display:inline-block}
-#chart{display:block;width:100%;height:360px;margin-top:10px;overflow:visible;touch-action:none}
-.gridline{stroke:var(--line);stroke-width:1}
-.axis-text{fill:var(--ink-soft);font:10px var(--mono)}
-.series-line{fill:none;stroke-width:2}
-.series-dot{stroke:var(--white);stroke-width:2}
-.crosshair{stroke:var(--ink);stroke-width:1;stroke-dasharray:3 3;opacity:0}
-.dlabel{font:500 11px var(--mono)}
-#tip{position:absolute;pointer-events:none;opacity:0;transition:opacity .12s;background:var(--ink);color:var(--white);padding:9px 11px;font:11px var(--mono);line-height:1.5;border-radius:2px;white-space:nowrap;z-index:5}
-#tip b{font-weight:500}
-.side-panel{padding:27px 23px;background:var(--ink);color:var(--paper)}
-.side-panel .eyebrow{color:#8bd1bd}
-.view-list{display:grid;gap:2px}
-.view-button{display:flex;justify-content:space-between;align-items:baseline;padding:12px 10px;border:0;border-bottom:1px solid rgba(255,253,248,.13);background:transparent;color:#abc0cf;cursor:pointer;text-align:left;width:100%}
-.view-button b{font:10px var(--mono);font-weight:400}
-.view-button.active{background:var(--coral);color:var(--white)}
-.view-button:hover:not(.active){color:var(--white)}
-.metric-callout{margin-top:60px;padding-top:19px;border-top:1px solid rgba(255,253,248,.22);color:#abc0cf;font:10px var(--mono)}
-.metric-callout strong{display:block;margin:4px 0 2px;color:var(--white);font:30px var(--display)}
-.metric-callout small{color:#8bd1bd;font:10px var(--mono)}
-
-details.data-table{margin-top:26px;border-top:1px solid var(--line);padding-top:18px}
-details.data-table summary{cursor:pointer;color:var(--ink-soft);font:11px var(--mono);letter-spacing:.05em}
-details.data-table summary:hover{color:var(--coral-dark)}
-.tablewrap{overflow-x:auto;margin-top:16px}
-table{border-collapse:collapse;width:100%;font:12px var(--mono)}
-th,td{padding:7px 10px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap}
-th:first-child,td:first-child{text-align:left}
-thead th{color:var(--ink-soft);font-weight:400;font-size:10px;text-transform:uppercase}
-
-.method-band{background:var(--ink);color:var(--paper);padding:105px 0}
-.method-grid{display:grid;grid-template-columns:.82fr 1.18fr;align-items:center;gap:100px}
-.method-band .eyebrow{color:#8bd1bd}
-.method-band h2 em{color:#8bd1bd}
-.method-intro p:last-child{max-width:335px;margin-bottom:0;color:#abc0cf}
-.formula-card{padding:37px 38px 29px;border:1px solid rgba(255,253,248,.28)}
-.formula-tag{color:#8bd1bd;font:10px var(--mono);letter-spacing:.06em}
-.formula{margin:44px 0 40px;color:var(--white);font-family:var(--display);font-size:clamp(24px,3vw,38px);line-height:1.3}
-.parameter-row{display:grid;grid-template-columns:repeat(3,1fr);gap:13px;padding-top:16px;border-top:1px solid rgba(255,253,248,.2);color:#abc0cf;font:10px var(--mono)}
-.parameter-row b{display:block;margin-bottom:4px;color:var(--paper);font-size:15px;font-weight:400}
-
-.finding-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
-.finding-card{min-height:280px;display:flex;flex-direction:column;padding:25px;border:1px solid var(--line)}
-.finding-card.featured{background:var(--coral);color:var(--white);border-color:var(--coral);transform:translateY(-12px)}
-.card-index{font:11px var(--mono);color:var(--coral-dark)}
-.featured .card-index,.featured .card-footer{color:#ffd9c8}
-.finding-card h3{margin:46px 0 13px;font:26px var(--display);line-height:1.05;font-weight:500}
-.finding-card p{max-width:260px;margin-bottom:18px;color:var(--ink-soft);font-size:13px}
-.featured p{color:#fff0e7}
-.card-footer{margin-top:auto;color:var(--coral-dark);font:10px var(--mono);text-transform:uppercase}
-
-.stocks-grid{display:grid;grid-template-columns:1fr 1fr;gap:56px;align-items:center}
-.figure-frame{background:var(--white);border:1px solid var(--line);padding:14px}
-.figure-frame img{display:block}
-figcaption{margin-top:11px;color:var(--ink-soft);font:10px var(--mono)}
-.ticker-chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:22px}
-.chip{padding:5px 11px;border:1px solid var(--line);font:11px var(--mono);color:var(--ink-soft)}
-.inline-code{font:12px var(--mono)}
-
-.archive-note{display:grid;grid-template-columns:85px 1fr auto;align-items:center;gap:34px;padding:47px 0 52px;border-top:1px solid var(--line)}
-.archive-mark{color:var(--coral);font:40px var(--display)}
-.archive-note h2{margin-bottom:10px;font-size:36px}
-.archive-note p:not(.eyebrow){max-width:570px;margin-bottom:0;color:var(--ink-soft);font-size:13px}
-.text-link{align-self:end;padding-bottom:4px;border-bottom:1px solid var(--ink);font-size:12px;font-weight:700;white-space:nowrap}
-.site-footer{display:flex;justify-content:space-between;padding:24px 0 31px;color:var(--ink-soft);border-top:1px solid var(--line);font:10px var(--mono);gap:16px;flex-wrap:wrap}
-.site-footer a{color:var(--ink)}
-
-.reveal{animation:rise .8s both}
-.reveal-delay{animation-delay:.16s}
-@keyframes rise{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
-@media (prefers-reduced-motion:reduce){.reveal{animation:none}.button:hover{transform:none}}
-
-@media (max-width:900px){
-  .shell,.site-header{width:min(100% - 38px,620px)}
-  .site-header{height:70px}
-  .top-nav{gap:14px}
-  .top-nav>a:not(.nav-cta){display:none}
-  .hero{display:block;padding:60px 0 56px}
-  h1{font-size:54px}
-  .hero-visual{min-height:320px;margin-top:48px}
-  .hero-actions{align-items:flex-start;flex-direction:column;gap:17px}
-  .ticker{grid-template-columns:repeat(2,1fr);padding:20px 19px}
-  .section{padding:76px 0}
-  .section-heading{display:block;margin-bottom:34px}
-  .section-description{margin-top:22px}
-  .explorer-grid,.method-grid,.stocks-grid{grid-template-columns:1fr}
-  .chart-panel{min-height:400px;padding:20px 14px 17px}
-  #chart{height:290px}
-  .method-band{padding:74px 0}
-  .method-grid{gap:44px}
-  .formula-card{padding:25px 20px 20px}
-  .formula{margin:32px 0;font-size:25px}
-  .parameter-row{grid-template-columns:1fr;gap:16px}
-  .finding-grid{grid-template-columns:1fr;gap:12px}
-  .finding-card.featured{transform:none}
-  .stocks-grid{gap:34px}
-  .archive-note{grid-template-columns:48px 1fr;gap:15px}
-  .archive-mark{font-size:30px}
-  .archive-note h2{font-size:30px}
-  .archive-note .text-link{grid-column:2;align-self:start;margin-top:5px}
-  .site-footer{display:grid;gap:12px}
-}
-</style>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
 </head>
 <body>
+<div class="layout">
 
-<header class="site-header">
-  <a class="wordmark" href="#top" aria-label="Bootstrap Desk home"><span class="wordmark-mark">B</span><span>BOOTSTRAP DESK</span></a>
-  <nav class="top-nav" aria-label="Primary navigation">
-    <a href="#curve">The curve</a>
-    <a href="#method">Method</a>
-    <a href="#findings">Findings</a>
-    <a href="https://github.com/omarja12/Bootstrap-Yield-Curve" target="_blank" rel="noreferrer">GitHub <span aria-hidden="true">&#8599;</span></a>
-    <a class="nav-cta" href="Bootstrapping_Yield_Curve.ipynb" download>Get the notebook <span aria-hidden="true">&#8599;</span></a>
-  </nav>
-</header>
+  <aside class="sidebar" id="sidebar">
+    <a class="brand" href="index.html">
+      <div class="brand-title">Bootstrapping the Yield Curve</div>
+      <div class="brand-sub">Computational finance &middot; 2022</div>
+    </a>
+    <button class="menu-btn" id="menuBtn" aria-expanded="false" aria-controls="sidebarBody">MENU</button>
+    <div class="sidebar-body" id="sidebarBody">
+      <p class="toc-label">Contents</p>
+      <ul class="toc">
+        <li><a href="index.html" aria-current="page"><span class="n">00</span><span>Overview</span></a></li>
+        <li><a href="01-discounting.html"><span class="n">01</span><span>Discounting a bond</span></a></li>
+        <li><a href="02-bootstrapping.html"><span class="n">02</span><span>Three ways to bootstrap</span></a></li>
+        <li><a href="03-rates.html"><span class="n">03</span><span>Spot, yield and forward</span></a></li>
+        <li><a href="04-results.html"><span class="n">04</span><span>Results</span></a></li>
+        <li><a href="05-equities.html"><span class="n">05</span><span>The equity exercise</span></a></li>
+      </ul>
+      <p class="sidebar-foot">
+        <a href="https://github.com/omarja12/Bootstrap-Yield-Curve">Source on GitHub</a><br>
+        <a href="Bootstrapping_Yield_Curve.ipynb" download>Download the notebook</a><br>
+        GPL-3.0
+      </p>
+    </div>
+  </aside>
 
-<main id="top">
+  <main class="content">
+    <div class="col hero-home">
+      <p class="kicker">Overview</p>
+      <h1>Ten bonds, one curve, three ways of finding it.</h1>
+      <p class="standfirst">A bond&rsquo;s price is the sum of its discounted cash flows. Turn that sentence around and it becomes a question: given the prices, what were the discount factors? This is the answer, worked three separate ways so that each one checks the others.</p>
 
-  <section class="hero shell">
-    <div class="hero-copy reveal">
-      <p class="eyebrow"><span class="eyebrow-dot"></span> ARCHIVE &nbsp;/&nbsp; COMPUTATIONAL FINANCE</p>
-      <h1>Three routes to<br>one <em>curve.</em></h1>
-      <p class="hero-intro">Ten Treasury bonds, one discount-factor curve, and three independent ways of getting there &mdash; a linear solve, a global optimiser, and substitution done by hand.</p>
-      <div class="hero-actions">
-        <a class="button button-dark" href="#curve">Explore the curve <span aria-hidden="true">&#8595;</span></a>
-        <span class="hero-note">Original project &middot; August 2022</span>
+      <div class="home-actions">
+        <a class="btn btn-solid" href="01-discounting.html">Start with the theory</a>
+        <a class="btn" href="04-results.html">Skip to results</a>
+      </div>
+
+      <div class="facts">
+        <div class="fact"><div class="v">10</div><div class="l">Treasury bonds<br>1&ndash;10 years</div></div>
+        <div class="fact"><div class="v">3</div><div class="l">Bootstrap<br>methods</div></div>
+        <div class="fact"><div class="v">0.0000</div><div class="l">Disagreement<br>between them</div></div>
+        <div class="fact"><div class="v">5</div><div class="l">Equity tickers<br>since 2012</div></div>
+      </div>
+
+      <h2>What the project does</h2>
+      <p>The input is a set of ten coupon-bearing government bonds, one maturing each year out to ten years. Each is described by three numbers: how long until it matures, what it costs today, and what coupon it pays. Nothing else.</p>
+      <p>From that, a <code>YieldCurve</code> class recovers the discount-factor curve &mdash; the price today of one unit of currency delivered at each future date &mdash; and from those factors derives the three rate curves that practitioners actually quote: spot rates, yields to maturity, and forward rates.</p>
+      <p>The interesting part is not the answer but the fact that it can be reached three different ways. A direct linear solve, a numerical optimiser and a hand-rolled recursion have almost nothing in common as procedures, yet they agree to four decimals. When independent methods converge, the result is probably not an artefact of the method.</p>
+
+      <div class="callout">
+        <p class="k">The check that matters</p>
+        <p>Multiplying the cash-flow matrix back through the recovered discount factors reproduces all ten market prices <strong>exactly</strong>. A curve that cannot reprice the instruments it was built from is not a curve.</p>
+      </div>
+
+      <h2>Chapters</h2>
+      <div class="chapter-cards">
+        <a class="ch-card" href="01-discounting.html">
+          <span class="n">01</span>
+          <h3>Discounting a bond</h3>
+          <p>Discount factors, the cash-flow matrix, and why pricing ten bonds is one matrix equation.</p>
+        </a>
+        <a class="ch-card" href="02-bootstrapping.html">
+          <span class="n">02</span>
+          <h3>Three ways to bootstrap</h3>
+          <p>The linear solve, the global optimiser and the iterative recursion &mdash; how each works and when they part company.</p>
+        </a>
+        <a class="ch-card" href="03-rates.html">
+          <span class="n">03</span>
+          <h3>Spot, yield and forward</h3>
+          <p>Converting discount factors into the three quoted curves, and why forward rates fall fastest.</p>
+        </a>
+        <a class="ch-card" href="04-results.html">
+          <span class="n">04</span>
+          <h3>Results</h3>
+          <p>The recovered curve, the numbers behind it, and an interactive view of both.</p>
+        </a>
+        <a class="ch-card" href="05-equities.html">
+          <span class="n">05</span>
+          <h3>The equity exercise</h3>
+          <p>The project&rsquo;s second half: daily prices, cumulative returns, correlation and a CSV round-trip.</p>
+        </a>
+      </div>
+
+      <div class="pager">
+        <span class="empty"></span>
+        <a class="next" href="01-discounting.html">
+          <div class="dir">Next</div>
+          <div class="t">01 &middot; Discounting a bond</div>
+        </a>
       </div>
     </div>
-    <div class="hero-visual reveal reveal-delay" role="img" aria-label="Decorative illustration of yield curves falling across maturity">
-      <div class="visual-label">RATE / MATURITY</div>
-      <div class="curve-orbit orbit-one"></div><div class="curve-orbit orbit-two"></div><div class="curve-orbit orbit-three"></div>
-      <div class="visual-axis axis-x"><span>1Y</span><span>4Y</span><span>7Y</span><span>10Y</span></div>
-      <div class="visual-axis axis-y"><span>5.2%</span><span>3.6%</span><span>2.0%</span></div>
-      <svg class="hero-chart" viewBox="0 0 560 360" aria-hidden="true" focusable="false">
-        <path class="chart-grid" d="M38 50H530 M38 128H530 M38 206H530 M38 284H530 M38 50V284 M200 50V284 M360 50V284 M530 50V284"/>
-        <path class="curve" style="stroke:#ec6a58" d="M38 66 C90 60, 130 62, 190 76 S300 122, 360 158 S470 224, 530 268"/>
-        <path class="curve" style="stroke:#3cafa5" d="M38 72 C90 66, 130 68, 190 80 S300 112, 360 136 S470 178, 530 208"/>
-        <path class="curve" style="stroke:#d4ddd6" d="M38 76 C90 70, 130 72, 190 84 S300 116, 360 142 S470 186, 530 218"/>
-        <circle cx="38" cy="66" r="4" class="curve-point"/><circle cx="530" cy="268" r="4" class="curve-point"/>
-      </svg>
-      <div class="visual-caption">Ten bonds<br><strong>one term structure</strong></div>
-    </div>
-  </section>
+  </main>
 
-  <section class="ticker" aria-label="Project facts">
-    <div><span class="ticker-number">10</span><span>Treasury bonds</span></div>
-    <div><span class="ticker-number">03</span><span>bootstrap methods</span></div>
-    <div><span class="ticker-number">10Y</span><span>curve horizon</span></div>
-    <div><span class="ticker-number">05</span><span>equity tickers</span></div>
-  </section>
-
-  <section class="section shell" id="curve">
-    <div class="section-heading">
-      <h2>The <em>term structure.</em></h2>
-      <p class="section-description">Bootstrapped from ten bonds priced between 89.74 and 98.14, with coupons stepping from 1.50% to 3.75%. Switch views to see the discount factors the rates are derived from.</p>
-    </div>
-
-    <div class="explorer-grid">
-      <div class="chart-panel">
-        <div class="panel-topline">
-          <span id="chart-title">Rates in % by maturity</span>
-          <span class="legend" id="legend"></span>
-        </div>
-        <svg id="chart" role="img" aria-labelledby="chart-title"></svg>
-        <div id="tip" role="status" aria-live="polite"></div>
-      </div>
-      <div class="side-panel">
-        <p class="eyebrow">VIEW</p>
-        <div class="view-list">
-          <button class="view-button active" data-view="rates" aria-pressed="true">Rates <b>%</b></button>
-          <button class="view-button" data-view="df" aria-pressed="false">Discount factors <b>DF</b></button>
-        </div>
-        <div class="metric-callout">
-          MAXIMUM DISAGREEMENT
-          <strong>0.0000</strong>
-          <small>between all three methods</small>
-        </div>
-      </div>
-    </div>
-
-    <details class="data-table">
-      <summary>View the underlying numbers</summary>
-      <div class="tablewrap">
-        <table>
-          <thead><tr><th>Maturity</th><th>1Y</th><th>2Y</th><th>3Y</th><th>4Y</th><th>5Y</th><th>6Y</th><th>7Y</th><th>8Y</th><th>9Y</th><th>10Y</th></tr></thead>
-          <tbody>
-            <tr><td>Price</td><td>96.60</td><td>93.71</td><td>91.56</td><td>90.24</td><td>89.74</td><td>90.04</td><td>91.09</td><td>92.82</td><td>95.19</td><td>98.14</td></tr>
-            <tr><td>Coupon %</td><td>1.50</td><td>1.75</td><td>2.00</td><td>2.25</td><td>2.50</td><td>2.75</td><td>3.00</td><td>3.25</td><td>3.50</td><td>3.75</td></tr>
-            <tr><td>Discount factor</td><td>0.9517</td><td>0.9046</td><td>0.8612</td><td>0.8227</td><td>0.7892</td><td>0.7604</td><td>0.7361</td><td>0.7156</td><td>0.6985</td><td>0.6842</td></tr>
-            <tr><td>Spot %</td><td>5.07</td><td>5.14</td><td>5.11</td><td>5.00</td><td>4.85</td><td>4.67</td><td>4.47</td><td>4.27</td><td>4.07</td><td>3.87</td></tr>
-            <tr><td>YTM %</td><td>5.07</td><td>5.14</td><td>5.11</td><td>5.00</td><td>4.86</td><td>4.69</td><td>4.51</td><td>4.33</td><td>4.15</td><td>3.98</td></tr>
-            <tr><td>1y forward %</td><td>&mdash;</td><td>5.21</td><td>5.04</td><td>4.68</td><td>4.26</td><td>3.78</td><td>3.30</td><td>2.87</td><td>2.45</td><td>2.08</td></tr>
-          </tbody>
-        </table>
-      </div>
-    </details>
-  </section>
-
-  <section class="method-band" id="method">
-    <div class="shell method-grid">
-      <div class="method-intro">
-        <p class="eyebrow">THE METHOD</p>
-        <h2>Solve it, <em>search it,</em> or step it.</h2>
-        <p>A coupon bond&rsquo;s price is just its cash flows discounted back to today. Stack ten bonds and that becomes a matrix equation &mdash; and once it is a matrix equation, there is more than one honest way to invert it.</p>
-      </div>
-      <div class="formula-card">
-        <span class="formula-tag">PRICING IDENTITY</span>
-        <p class="formula"><b>C</b> &middot; <b>d</b> = <b>P</b></p>
-        <div class="parameter-row">
-          <div><b>Matrix</b>Direct linear solve of the cash-flow system</div>
-          <div><b>Solver</b>Minimise squared pricing error</div>
-          <div><b>Iterative</b>Forward substitution, one maturity at a time</div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <section class="section shell" id="findings">
-    <div class="section-heading">
-      <h2>What it <em>showed.</em></h2>
-      <p class="section-description">Three results worth keeping from the original run.</p>
-    </div>
-    <div class="finding-grid">
-      <article class="finding-card">
-        <span class="card-index">01</span>
-        <h3>The prices come back</h3>
-        <p>Multiplying the cash-flow matrix back through the bootstrapped discount factors reproduces all ten market prices exactly. That round-trip is the check that the curve is right.</p>
-        <span class="card-footer">Verification</span>
-      </article>
-      <article class="finding-card featured">
-        <span class="card-index">02</span>
-        <h3>All three agree</h3>
-        <p>The linear solve, the global optimiser and the hand-rolled iteration return the same discount factors to four decimals &mdash; three different routes, one curve.</p>
-        <span class="card-footer">Consistency</span>
-      </article>
-      <article class="finding-card">
-        <span class="card-index">03</span>
-        <h3>Forwards fall faster</h3>
-        <p>Spot and YTM peak near 5.14% at two years, then drift down to about 3.9%. The forward curve starts higher at 5.21% and drops to 2.08% &mdash; the marginal rates that the spot curve averages over.</p>
-        <span class="card-footer">Shape</span>
-      </article>
-    </div>
-  </section>
-
-  <section class="section shell" id="stocks" style="padding-top:0">
-    <div class="section-heading">
-      <h2>And five <em>tickers.</em></h2>
-      <p class="section-description">The second half of the project leaves rates behind: daily closes and volumes from January 2012, cumulative returns, a correlation matrix, and a CSV round-trip.</p>
-    </div>
-    <div class="stocks-grid">
-      <figure style="margin:0">
-        <div class="figure-frame">
-          <img src="images/cumulative_returns.png" width="1175" height="366" loading="lazy"
-               alt="Cumulative returns for AAPL, IBM, MSFT, GOOG and AMZN from January 2012 onward, all rising, with AAPL and AMZN ending far above IBM.">
-        </div>
-        <figcaption>Cumulative returns since January 2012 &mdash; original notebook output.</figcaption>
-      </figure>
-      <div>
-        <p style="color:var(--ink-soft)">Prices were pulled through <code class="inline-code">pandas_datareader</code>, written out one CSV per ticker, then read back and recombined into a single frame &mdash; the round-trip being the point of the exercise rather than the returns themselves.</p>
-        <div class="ticker-chips">
-          <span class="chip">AAPL</span><span class="chip">IBM</span><span class="chip">MSFT</span><span class="chip">GOOG</span><span class="chip">AMZN</span>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <section class="shell">
-    <div class="archive-note">
-      <div class="archive-mark">&#167;</div>
-      <div>
-        <p class="eyebrow">ARCHIVED</p>
-        <h2>Kept as it was written.</h2>
-        <p>The notebook is unchanged from the original run &mdash; saved outputs, Python 3.9 kernel and all. The Yahoo endpoint behind <code class="inline-code">pandas_datareader</code> has moved on since, so the equity section may need adjusting to run today.</p>
-      </div>
-      <a class="text-link" href="https://github.com/omarja12/Bootstrap-Yield-Curve">Read the source</a>
-    </div>
-  </section>
-
-</main>
-
-<footer class="site-footer shell">
-  <span>BOOTSTRAP DESK &mdash; COMPUTATIONAL FINANCE ARCHIVE</span>
-  <span><a href="https://github.com/omarja12/Bootstrap-Yield-Curve">GITHUB</a> &nbsp;&middot;&nbsp; GPL-3.0</span>
-</footer>
-
-<script>
-(function(){
-  var M=[1,2,3,4,5,6,7,8,9,10];
-  var SERIES={
-    rates:{
-      title:'Rates in % by maturity', unit:'%', dec:2, tick:1,
-      lines:[
-        {name:'Spot',    color:'#e05a46', x:M,          y:[5.07,5.14,5.11,5.00,4.85,4.67,4.47,4.27,4.07,3.87]},
-        {name:'YTM',     color:'#0a9b8e', x:M,          y:[5.07,5.14,5.11,5.00,4.86,4.69,4.51,4.33,4.15,3.98]},
-        {name:'Forward', color:'#c08018', x:M.slice(1), y:[5.21,5.04,4.68,4.26,3.78,3.30,2.87,2.45,2.08]}
-      ]
-    },
-    df:{
-      title:'Discount factor by maturity', unit:'', dec:4, tick:3,
-      lines:[
-        {name:'Discount factor', color:'#e05a46', x:M, y:[0.9517,0.9046,0.8612,0.8227,0.7892,0.7604,0.7361,0.7156,0.6985,0.6842]}
-      ]
-    }
-  };
-
-  var svg=document.getElementById('chart'),
-      tip=document.getElementById('tip'),
-      legendEl=document.getElementById('legend'),
-      titleEl=document.getElementById('chart-title'),
-      view='rates', geom=null;
-  var NS='http://www.w3.org/2000/svg';
-  var PADR=58;
-
-  function el(n,a){var e=document.createElementNS(NS,n);for(var k in a){e.setAttribute(k,a[k]);}return e;}
-
-  function draw(){
-    var cfg=SERIES[view];
-    var box=svg.getBoundingClientRect();
-    var W=Math.max(320,box.width), H=box.height||360;
-    svg.setAttribute('viewBox','0 0 '+W+' '+H);
-    while(svg.firstChild){svg.removeChild(svg.firstChild);}
-    titleEl.textContent=cfg.title;
-
-    var padL=48,padT=16,padB=30;
-    var all=[];
-    cfg.lines.forEach(function(l){all=all.concat(l.y);});
-    var lo=Math.min.apply(null,all),hi=Math.max.apply(null,all);
-    var span=(hi-lo)||1; lo-=span*0.15; hi+=span*0.15;
-    var X=function(m){return padL+(m-1)/9*(W-padL-PADR);};
-    var Y=function(v){return padT+(hi-v)/(hi-lo)*(H-padT-padB);};
-    geom={X:X,Y:Y,padL:padL,padT:padT,H:H,W:W,cfg:cfg};
-
-    for(var i=0;i<=4;i++){
-      var v=lo+(hi-lo)*i/4, y=Y(v);
-      svg.appendChild(el('line',{x1:padL,x2:W-PADR,y1:y,y2:y,'class':'gridline'}));
-      var t=el('text',{x:padL-9,y:y+3,'class':'axis-text','text-anchor':'end'});
-      t.textContent=v.toFixed(cfg.tick);
-      svg.appendChild(t);
-    }
-    M.forEach(function(m){
-      var t=el('text',{x:X(m),y:H-8,'class':'axis-text','text-anchor':'middle'});
-      t.textContent=m+'Y';
-      svg.appendChild(t);
-    });
-
-    cfg.lines.forEach(function(l){
-      var d=l.x.map(function(m,i){return (i?'L':'M')+X(m)+' '+Y(l.y[i]);}).join(' ');
-      svg.appendChild(el('path',{d:d,'class':'series-line',stroke:l.color}));
-      l.x.forEach(function(m,i){
-        svg.appendChild(el('circle',{cx:X(m),cy:Y(l.y[i]),r:4,'class':'series-dot',fill:l.color}));
-      });
-      var last=l.x.length-1;
-      var lab=el('text',{x:X(l.x[last])+9,y:Y(l.y[last])+4,'class':'dlabel',fill:l.color});
-      lab.textContent=l.name;
-      svg.appendChild(lab);
-    });
-
-    svg.appendChild(el('line',{id:'cross',x1:0,x2:0,y1:padT,y2:H-padB,'class':'crosshair'}));
-
-    legendEl.innerHTML = cfg.lines.length>1
-      ? cfg.lines.map(function(l){return '<span><i style="background:'+l.color+'"></i>'+l.name+'</span>';}).join('')
-      : '';
-  }
-
-  function hover(ev){
-    if(!geom){return;}
-    var box=svg.getBoundingClientRect();
-    var cx=ev.touches?ev.touches[0].clientX:ev.clientX;
-    var step=(geom.W-geom.padL-PADR)/9;
-    var m=Math.round(1+(cx-box.left-geom.padL)/step);
-    m=Math.max(1,Math.min(10,m));
-    var cross=document.getElementById('cross');
-    if(cross){cross.setAttribute('x1',geom.X(m));cross.setAttribute('x2',geom.X(m));cross.style.opacity=1;}
-    var rows=geom.cfg.lines.map(function(l){
-      var i=l.x.indexOf(m);
-      if(i<0){return null;}
-      return '<span style="color:'+l.color+'">&#9679;</span> '+l.name+' <b>'+l.y[i].toFixed(geom.cfg.dec)+geom.cfg.unit+'</b>';
-    }).filter(Boolean);
-    tip.innerHTML='<b>'+m+'Y</b><br>'+rows.join('<br>');
-    tip.style.opacity=1;
-    var panel=svg.parentNode.getBoundingClientRect();
-    var left=(box.left-panel.left)+geom.X(m)+14;
-    if(left+tip.offsetWidth>panel.width-10){left=(box.left-panel.left)+geom.X(m)-tip.offsetWidth-14;}
-    tip.style.left=left+'px';
-    tip.style.top=((box.top-panel.top)+18)+'px';
-  }
-  function leave(){
-    tip.style.opacity=0;
-    var c=document.getElementById('cross');
-    if(c){c.style.opacity=0;}
-  }
-
-  svg.addEventListener('mousemove',hover);
-  svg.addEventListener('touchmove',hover,{passive:true});
-  svg.addEventListener('mouseleave',leave);
-  svg.addEventListener('touchend',leave);
-
-  Array.prototype.forEach.call(document.querySelectorAll('.view-button'),function(b){
-    b.addEventListener('click',function(){
-      Array.prototype.forEach.call(document.querySelectorAll('.view-button'),function(o){
-        o.classList.remove('active');o.setAttribute('aria-pressed','false');
-      });
-      b.classList.add('active');b.setAttribute('aria-pressed','true');
-      view=b.getAttribute('data-view');
-      leave();draw();
-    });
-  });
-
-  var t;
-  window.addEventListener('resize',function(){clearTimeout(t);t=setTimeout(draw,120);});
-  if(document.fonts&&document.fonts.ready){document.fonts.ready.then(draw);}
-  draw();
-})();
-</script>
+</div>
+<script src="site.js"></script>
 </body>
 </html>

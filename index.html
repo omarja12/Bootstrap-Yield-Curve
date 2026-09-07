@@ -69,28 +69,73 @@
     <p>This project does that with ten bonds, and recovers the full picture below.</p>
   </section>
 
+  <section class="prose body-copy" id="explore">
+    <h2>The curve it found</h2>
+    <p>Two of these lines are what it costs to borrow <em>up to</em> a given year. The third &mdash; the forward rate &mdash; is the cost of borrowing <em>during</em> that single year alone. Hover any point to read the exact figures.</p>
+  </section>
+
   <section class="prose">
-    <figure>
-      <div class="frame">
-        <img src="images/all_rates.png" width="1169" height="333" loading="lazy"
-             alt="Three rate curves plotted against maturity from one to ten years. Two lines overlap closely, peaking near 5.1 percent at two years then easing to about 3.9 percent. A third line starts higher at 5.2 percent and falls much more steeply to 2.1 percent.">
+    <div class="switch" role="group" aria-label="Choose what to plot">
+      <button class="active" data-view="rates" aria-pressed="true">Rates</button>
+      <button data-view="df" aria-pressed="false">Discount factors</button>
+    </div>
+    <div class="chart-card">
+      <div class="chart-head">
+        <span class="chart-title" id="chart-title">Rates in % by maturity</span>
+        <span class="legend" id="legend"></span>
       </div>
-      <figcaption>The recovered curve. Borrowing is dearest around the two-year mark, then gets steadily cheaper &mdash; the market pricing in falling rates ahead.</figcaption>
-    </figure>
+      <svg id="chart" role="img" aria-labelledby="chart-title"></svg>
+      <div id="tip" role="status" aria-live="polite"></div>
+    </div>
+    <p style="font-size:13.5px;color:var(--ink-soft)">Borrowing is dearest around the two-year mark, then gets steadily cheaper &mdash; the market pricing in falling rates ahead.</p>
+  </section>
+
+  <section class="method-band">
+    <div class="shell method-grid">
+      <div class="method-intro">
+        <p class="eyebrow"><span class="eyebrow-dot"></span> HOW IT WORKS</p>
+        <h2>One equation, <em>three</em> answers.</h2>
+        <p>Line up all ten bonds and their payment schedules become a grid of numbers. Recovering the curve means solving that grid &mdash; and there is more than one honest way to do it.</p>
+      </div>
+      <div class="formula-card">
+        <span class="formula-tag">THE PRICING IDENTITY</span>
+        <p class="formula">C &middot; d = P</p>
+        <p class="formula-legend">PAYMENTS &times; DISCOUNTS = PRICES</p>
+        <div class="parameter-row">
+          <div><b>Matrix</b>Solve the grid directly, in one step</div>
+          <div><b>Solver</b>Search for the values that fit best</div>
+          <div><b>Iterative</b>Step up year by year, by hand</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="shell takeaways">
+    <div class="ch-grid">
+      <article class="ch-card">
+        <span class="n">01</span>
+        <h3>The prices come back</h3>
+        <p>Run the recovered curve backwards and all ten original market prices reappear exactly. A curve that cannot reprice the bonds it was built from is not a curve.</p>
+        <span class="go">Verification</span>
+      </article>
+      <article class="ch-card featured">
+        <span class="n">02</span>
+        <h3>Three methods, one curve</h3>
+        <p>Any single method can be quietly wrong and still look convincing. Three that share no machinery are unlikely to be wrong the same way &mdash; and these agree to four decimals.</p>
+        <span class="go">Consistency</span>
+      </article>
+      <article class="ch-card">
+        <span class="n">03</span>
+        <h3>Cheaper money ahead</h3>
+        <p>The forward curve falls from 5.21% to 2.08% &mdash; nearly three times the drop in the headline rates. It is the sharper signal of where borrowing costs are heading.</p>
+        <span class="go">Interpretation</span>
+      </article>
+    </div>
   </section>
 
   <section class="prose body-copy">
-    <h2>Why do it three ways</h2>
-    <p>The same curve is computed by three methods that share almost no machinery: a direct matrix solve, a numerical optimiser that searches for the best fit, and a step-by-step recursion done the way a trader would do it by hand.</p>
-    <p>They agree. That agreement is the whole point &mdash; a single method can be quietly wrong and look convincing, but three unrelated methods are unlikely to be wrong in the same direction at the same time.</p>
-
-    <div class="callout">
-      <p class="k">The check that matters</p>
-      <p>Run the recovered curve backwards and it reproduces all ten original market prices <strong>exactly</strong>. A curve that cannot reprice the bonds it was built from is not a curve &mdash; and this one can.</p>
-    </div>
-
     <h2>Read it in order</h2>
-    <p>Five short chapters. The first three build the theory from scratch, assuming nothing; the last two show what came out of it.</p>
+    <p>Five short chapters. The first three build the theory from scratch, assuming no background; the last two show what came out of it.</p>
   </section>
 
   <section class="shell" style="margin-top:10px">
@@ -164,5 +209,6 @@
 </footer>
 
 <script src="site.js"></script>
+<script src="chart.js"></script>
 </body>
 </html>

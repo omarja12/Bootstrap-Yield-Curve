@@ -266,3 +266,35 @@ figcaption{margin-top:11px;font-size:12.5px;color:var(--ink-soft)}
   .site-footer{margin-top:64px;padding:48px 0 32px}
   .footer-grid{grid-template-columns:1fr;gap:34px}
 }
+
+/* ---------- dark formula band ---------- */
+.method-band{background:var(--ink);color:var(--paper);padding:104px 0;margin-top:96px}
+.method-grid{display:grid;grid-template-columns:.86fr 1.14fr;align-items:center;gap:90px}
+.method-band .eyebrow{color:var(--mint)}
+.method-band .eyebrow-dot{background:var(--mint)}
+.method-band h2{margin-top:0;color:var(--paper)}
+.method-band h2 em{color:var(--mint)}
+.method-intro p{max-width:36ch;margin-bottom:0;color:#a8bdb6;font-size:15.5px}
+.formula-card{padding:38px 38px 30px;border:1px solid rgba(255,253,248,.26)}
+.formula-tag{font:10px var(--mono);letter-spacing:.09em;text-transform:uppercase;color:var(--mint)}
+.formula{
+  margin:44px 0 14px;color:var(--white);font-family:var(--display);font-weight:500;
+  font-size:clamp(30px,4vw,50px);line-height:1.15;letter-spacing:.01em;
+}
+.formula-legend{margin:0 0 40px;font:11px var(--mono);color:#a8bdb6;letter-spacing:.02em}
+.parameter-row{
+  display:grid;grid-template-columns:repeat(3,1fr);gap:16px;padding-top:20px;
+  border-top:1px solid rgba(255,253,248,.2);color:#a8bdb6;font:10px var(--mono);line-height:1.6;
+}
+.parameter-row b{display:block;margin-bottom:5px;color:var(--paper);font-size:15px;font-weight:400;font-family:var(--body)}
+
+/* ---------- takeaway cards ---------- */
+.takeaways{padding:96px 0 0}
+@media (max-width:900px){
+  .method-band{padding:70px 0;margin-top:64px}
+  .method-grid{grid-template-columns:1fr;gap:40px}
+  .formula-card{padding:26px 20px 22px}
+  .formula{margin:32px 0 12px}
+  .parameter-row{grid-template-columns:1fr;gap:18px}
+  .takeaways{padding:64px 0 0}
+}

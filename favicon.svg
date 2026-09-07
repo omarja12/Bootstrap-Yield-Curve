@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" role="img" aria-label="Yield curve mark">
+  <rect width="32" height="32" rx="6" fill="#16181b"/>
+  <!-- humped curve: rises to a peak near the short end, then falls away -->
+  <path d="M5 20 C8 15, 10 13.5, 13 14 C17 14.7, 20 19, 27 25"
+        fill="none" stroke="#f4f2ec" stroke-width="2.6"
+        stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="13" cy="14" r="2.6" fill="#c4452c"/>
+</svg>

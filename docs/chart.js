@@ -73,12 +73,16 @@
       svg.appendChild(yl);
     }
 
-    M.forEach(function (m) {
+    // a 10-tick axis collides below roughly 520px, so show every other one
+    var everyOther = (W - PAD_L - PAD_R) < 380;
+    M.forEach(function (m, i) {
+      if (everyOther && i % 2 === 1 && m !== 10) { return; }
       var xl = el('text', { x: X(m), y: H - 8, 'class': 'axis-text', 'text-anchor': 'middle' });
       xl.textContent = m + 'Y';
       svg.appendChild(xl);
     });
 
+    var ends = [];
     cfg.lines.forEach(function (l) {
       var d = l.x.map(function (m, i) {
         return (i ? 'L' : 'M') + X(m) + ' ' + Y(l.y[i]);
@@ -93,10 +97,19 @@
 
       /* direct label at the right-hand end, so identity is never colour-alone */
       var last = l.x.length - 1;
-      var lab = el('text', {
-        x: X(l.x[last]) + 9, y: Y(l.y[last]) + 4, 'class': 'dlabel', fill: l.color
-      });
-      lab.textContent = l.name;
+      ends.push({ name: l.name, color: l.color, x: X(l.x[last]) + 9, y: Y(l.y[last]) + 4 });
+    });
+
+    /* Spot and YTM converge at the long end; stacked labels would overprint.
+       Walk them in vertical order and push any that are too close apart. */
+    var MIN_GAP = 13;
+    ends.sort(function (a, b) { return a.y - b.y; });
+    for (var k = 1; k < ends.length; k++) {
+      if (ends[k].y - ends[k - 1].y < MIN_GAP) { ends[k].y = ends[k - 1].y + MIN_GAP; }
+    }
+    ends.forEach(function (e) {
+      var lab = el('text', { x: e.x, y: e.y, 'class': 'dlabel', fill: e.color });
+      lab.textContent = e.name;
       svg.appendChild(lab);
     });
 

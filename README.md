@@ -40,7 +40,7 @@ ten market prices exactly — which is the check that the bootstrap is correct.
 From the discount factors the class derives spot rates, yield to maturity per bond, and
 one-year forward rates.
 
-![Spot rates, YTM and forward rates](images/all_rates.png)
+![Spot rates, YTM and forward rates](docs/images/all_rates.png)
 
 The curve is humped: spot and YTM peak around year 2 near 5.14% and decline to roughly
 3.9% at ten years. The forward curve starts highest at 5.21% and falls much faster,
@@ -48,9 +48,9 @@ down to about 2.08% — the usual relationship, since forwards are the marginal 
 the spot curve averages.
 
 Each series is also plotted on its own:
-[spot rates](images/spot_rates.png) ·
-[yield to maturity](images/yield_to_maturity.png) ·
-[forward rates](images/forward_rates.png)
+[spot rates](docs/images/spot_rates.png) ·
+[yield to maturity](docs/images/yield_to_maturity.png) ·
+[forward rates](docs/images/forward_rates.png)
 
 ---
 
@@ -59,7 +59,7 @@ Each series is also plotted on its own:
 Daily close prices and volumes for **AAPL, IBM, MSFT, GOOG and AMZN**, pulled from Yahoo
 Finance through `pandas_datareader` from 1 January 2012 onward.
 
-![Cumulative returns](images/cumulative_returns.png)
+![Cumulative returns](docs/images/cumulative_returns.png)
 
 The section also builds the daily-return correlation matrix, writes one CSV per ticker,
 and reads them back into a single combined DataFrame — the round-trip being the point of

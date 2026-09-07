@@ -19,6 +19,13 @@
   --body:'Manrope',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
 }
 
+.skip{
+  position:absolute;left:14px;top:-46px;z-index:99;
+  padding:11px 16px;background:var(--ink);color:var(--white);
+  font:600 13px var(--body);border-radius:2px;transition:top .15s ease;
+}
+.skip:focus{top:14px;outline:2px solid var(--coral);outline-offset:2px}
+
 *{box-sizing:border-box}
 html{scroll-behavior:smooth}
 body{

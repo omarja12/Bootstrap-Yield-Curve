@@ -344,5 +344,7 @@ table.corr caption{caption-side:bottom;padding-top:12px}
 
 @media (max-width:900px){
   .eq-panels{grid-template-columns:repeat(2,1fr)}
+  /* five panels in a two-wide grid leaves a hole; let the last one span */
+  .eq-panels>.eq-panel:last-child{grid-column:1 / -1}
   .eq-spark{height:76px}
 }

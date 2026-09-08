@@ -94,4 +94,9 @@ full at **[omarja12.github.io/Bootstrap-Yield-Curve](https://omarja12.github.io/
 
 ## License
 
-GPL-3.0 — see [LICENSE](LICENSE).
+[PolyForm Strict 1.0.0](LICENSE), with an additional permission for evaluation.
+
+In plain terms: you are free to read the source and to download and run it on your own
+machine to evaluate the work — recruiters and hiring teams explicitly included. You may
+not redistribute it, build derivative works from it, or use it commercially without
+written permission.

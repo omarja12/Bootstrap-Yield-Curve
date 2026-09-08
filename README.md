@@ -13,7 +13,7 @@ the rates derived from them, and the results &mdash; with an interactive curve.
 
 ---
 
-## Exercise 1 — The yield curve
+## Part one — The yield curve
 
 A `YieldCurve` class takes an `n x 3` array of bonds — maturity, dirty price, coupon rate —
 builds the cash-flow matrix, and bootstraps the discount factors.
@@ -61,7 +61,7 @@ Each series is also plotted on its own:
 
 ---
 
-## Exercise 2 — Five stocks
+## Part two — Returns and correlation
 
 Daily close prices and volumes for **AAPL, IBM, MSFT, GOOG and AMZN**, pulled from Yahoo
 Finance through `pandas_datareader` from 1 January 2012 onward.
@@ -70,7 +70,7 @@ Finance through `pandas_datareader` from 1 January 2012 onward.
 
 The section also builds the daily-return correlation matrix, writes one CSV per ticker,
 and reads them back into a single combined DataFrame — the round-trip being the point of
-the exercise.
+the work.
 
 ---
 
@@ -81,8 +81,8 @@ pip install numpy scipy pandas matplotlib seaborn numpy-financial pandas-datarea
 jupyter lab Bootstrapping_Yield_Curve.ipynb
 ```
 
-Written against Python 3.9. Exercise 1 needs no network — the bond data is in the
-notebook. Exercise 2 fetches from Yahoo Finance; note that `pandas_datareader`'s Yahoo
+Written against Python 3.9. Part one needs no network — the bond data is in the
+notebook. Part two fetches from Yahoo Finance; note that `pandas_datareader`'s Yahoo
 endpoint has changed since this was written, so that section may need adjusting to run
 today. The saved outputs in the notebook are from the original run.
 

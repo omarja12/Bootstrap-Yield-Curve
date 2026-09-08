@@ -7,7 +7,7 @@
 <meta name="description" content="The project's second half: daily prices for five tickers, cumulative returns, a correlation matrix and a CSV round-trip.">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="The Yield Curve">
-<meta property="og:title" content="05 · The equity exercise — The Yield Curve">
+<meta property="og:title" content="05 · Returns and correlation — The Yield Curve">
 <meta property="og:description" content="The project's second half: daily prices for five tickers, cumulative returns, a correlation matrix and a CSV round-trip.">
 <meta property="og:url" content="https://omarja12.github.io/Bootstrap-Yield-Curve/05-equities.html">
 <meta property="og:image" content="https://omarja12.github.io/Bootstrap-Yield-Curve/social-card.png">
@@ -15,11 +15,11 @@
 <meta property="og:image:height" content="630">
 <meta property="og:image:alt" content="The Yield Curve — ten bonds, one curve.">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="05 · The equity exercise — The Yield Curve">
+<meta name="twitter:title" content="05 · Returns and correlation — The Yield Curve">
 <meta name="twitter:description" content="The project's second half: daily prices for five tickers, cumulative returns, a correlation matrix and a CSV round-trip.">
 <meta name="twitter:image" content="https://omarja12.github.io/Bootstrap-Yield-Curve/social-card.png">
 <link rel="canonical" href="https://omarja12.github.io/Bootstrap-Yield-Curve/05-equities.html">
-<title>05 · The equity exercise — The Yield Curve</title>
+<title>05 · Returns and correlation — The Yield Curve</title>
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -49,14 +49,14 @@
     <a href="02-bootstrapping.html"><span class="n">02</span><div class="t">Three ways to bootstrap</div></a>
     <a href="03-rates.html"><span class="n">03</span><div class="t">Spot, yield and forward</div></a>
     <a href="04-results.html"><span class="n">04</span><div class="t">Results</div></a>
-    <a href="05-equities.html" aria-current="page"><span class="n">05</span><div class="t">The equity exercise</div></a>
+    <a href="05-equities.html" aria-current="page"><span class="n">05</span><div class="t">Returns and correlation</div></a>
   </div>
 </nav>
 
 <main id="main">
   <section class="page-hero prose">
 <p class="eyebrow">Chapter 05</p>
-      <h1>The equity exercise</h1>
+      <h1>Returns and correlation</h1>
       <p class="standfirst">The project&rsquo;s second half leaves rates behind for a data-handling problem: fetch it, transform it, store it, get it back unchanged.</p>
   </section>
   <section class="prose body-copy">
@@ -121,11 +121,11 @@ frames = (pd.read_csv(f'{ticker}.csv', usecols=['Date', 'price'],
 price = pd.concat(frames, axis=1)
 price.columns = tickers</code></pre>
 
-      <p>The exercise is the round-trip itself: the recovered frame has to match what was written, with the date index intact and the columns correctly re-labelled. Serialisation is where index handling and column naming quietly go wrong, and the check is that nothing changed on the way out and back.</p>
+      <p>The round-trip is the point: the recovered frame has to match what was written, with the date index intact and the columns correctly re-labelled. Serialisation is where index handling and column naming quietly go wrong, and the check is that nothing changed on the way out and back.</p>
 
       <div class="callout">
         <p class="k">The thread between the halves</p>
-        <p>The two exercises look unrelated but share a shape. Each recovers something from market observations &mdash; a discount curve from prices, a correlation structure from returns &mdash; and each is validated by <strong>reconstruction</strong>: reprice the bonds, reload the frame. Getting an answer is easy; showing it survives a round-trip is the work.</p>
+        <p>The two halves look unrelated but share a shape. Each recovers something from market observations &mdash; a discount curve from prices, a correlation structure from returns &mdash; and each is validated by <strong>reconstruction</strong>: reprice the bonds, reload the frame. Getting an answer is easy; showing it survives a round-trip is the work.</p>
       </div>
 
       <div class="pager">
@@ -156,7 +156,7 @@ price.columns = tickers</code></pre>
           <li><a href="02-bootstrapping.html">02 &middot; Three ways to bootstrap</a></li>
           <li><a href="03-rates.html">03 &middot; Spot, yield and forward</a></li>
           <li><a href="04-results.html">04 &middot; Results</a></li>
-          <li><a href="05-equities.html">05 &middot; The equity exercise</a></li>
+          <li><a href="05-equities.html">05 &middot; Returns and correlation</a></li>
         </ul>
       </div>
       <div class="footer-col">

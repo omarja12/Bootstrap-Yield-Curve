@@ -81,15 +81,11 @@ volume = pd.DataFrame({t: d['Volume'] for t, d in all_data.items()})</code></pre
         <p class="eq-note">Compounded, not summed &mdash; a 50% loss followed by a 50% gain does not return to par.</p>
       </div>
 
-      <figure>
-        <div class="frame">
-          <img src="images/cumulative_returns.png" width="1175" height="366" loading="lazy"
-               alt="Cumulative returns for AAPL, IBM, MSFT, GOOG and AMZN from January 2012 onward. All rise over the period, with AAPL and AMZN ending far above the others and IBM lowest.">
-        </div>
-        <figcaption>Cumulative returns from January 2012 &mdash; output of the original run.</figcaption>
-      </figure>
+      <div class="eq-panels" id="eq-panels"></div>
+      <p class="eq-scale" id="eq-scale"></p>
+      <p>One panel per ticker on a shared scale, so the heights are directly comparable. Five lines on a single axis cannot be distinguished by colour alone at this count &mdash; separating them into panels means the labels carry the identity and the colour carries nothing.</p>
 
-      <p>The spread is wide, which is the point of plotting them together: five stocks from broadly the same sector, held over the same window, ending in very different places.</p>
+      <p>The spread is the point. Four of the five multiplied more than twentyfold; IBM roughly doubled. Same sector, same window, wildly different outcomes &mdash; which is exactly the dispersion that makes the correlation question below worth asking.</p>
 
       <h2>Correlation</h2>
       <p>The correlation matrix is taken on <em>daily returns</em>, not on prices. This distinction matters more than it looks. Price series are non-stationary and drift upward together, so correlating them measures little beyond &ldquo;both went up over ten years&rdquo;. Returns are close to stationary, and their correlation measures what is actually of interest: whether these names move together day to day.</p>
@@ -103,8 +99,12 @@ volume = pd.DataFrame({t: d['Volume'] for t, d in all_data.items()})</code></pre
 <pre><code>returns = price.pct_change().dropna()
 returns.corr().style.background_gradient(cmap='viridis')</code></pre>
 
+      <div id="eq-corr" class="tablewrap" style="border:0;background:transparent"></div>
+
+      <p>Every pair moves together to some degree &mdash; there are no negative or near-zero entries anywhere in the matrix. That is the useful negative result: a basket of five large-cap technology names offers far less diversification than holding five positions suggests.</p>
+
       <div class="note">
-        <b>Why it matters downstream.</b> This matrix is the input to portfolio construction: diversification comes from low off-diagonal terms. Five tech names in one window will correlate strongly, which is a useful negative result &mdash; it shows how little diversification a sector-concentrated basket actually buys.
+        <b>One caveat on the numbers.</b> These are full-sample averages over fourteen years. Correlation is not stable: it rises sharply in drawdowns, precisely when diversification is being relied on. A single figure per pair hides that, which is why risk work usually looks at rolling windows rather than one number.
       </div>
 
       <h2>The round-trip</h2>
@@ -175,6 +175,8 @@ price.columns = tickers</code></pre>
   </div>
 </footer>
 
+<script src="equities_data.js"></script>
 <script src="site.js"></script>
+<script src="equities.js"></script>
 </body>
 </html>

@@ -319,3 +319,30 @@ figcaption{margin-top:11px;font-size:12.5px;color:var(--ink-soft)}
   .parameter-row{grid-template-columns:1fr;gap:18px}
   .takeaways{padding:64px 0 0}
 }
+
+/* ---------- chapter 05: small multiples + correlation ---------- */
+.eq-panels{
+  display:grid;grid-template-columns:repeat(5,1fr);gap:1px;
+  background:var(--line);border:1px solid var(--line);margin:26px 0 10px;
+}
+.eq-panel{background:var(--white);padding:16px 16px 12px}
+.eq-head{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin-bottom:10px}
+.eq-t{font:500 11px var(--mono);letter-spacing:.06em;color:var(--ink-soft)}
+.eq-v{font-family:var(--display);font-weight:650;font-size:21px;letter-spacing:-.01em;color:var(--ink)}
+.eq-spark{display:block;width:100%;height:84px;overflow:visible}
+.eq-line{fill:none;stroke-width:2;vector-effect:non-scaling-stroke}
+.eq-area{fill:rgba(196,69,44,.10);stroke:none}
+.eq-base{stroke:var(--line);stroke-width:1;stroke-dasharray:2 3;vector-effect:non-scaling-stroke}
+.eq-dot{stroke:var(--white);stroke-width:1.5;vector-effect:non-scaling-stroke}
+.eq-scale{font:10px var(--mono);letter-spacing:.04em;color:var(--ink-soft);margin:0 0 26px;max-width:none}
+
+table.corr{width:auto;min-width:min(100%,440px)}
+table.corr th,table.corr td{text-align:center;padding:9px 12px;border:1px solid var(--white)}
+table.corr td.rh{text-align:left;color:var(--ink-soft);background:transparent}
+table.corr td.diag{background:transparent;color:var(--ink-soft)}
+table.corr caption{caption-side:bottom;padding-top:12px}
+
+@media (max-width:900px){
+  .eq-panels{grid-template-columns:repeat(2,1fr)}
+  .eq-spark{height:76px}
+}

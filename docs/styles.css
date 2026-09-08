@@ -348,3 +348,15 @@ table.corr caption{caption-side:bottom;padding-top:12px}
   .eq-panels>.eq-panel:last-child{grid-column:1 / -1}
   .eq-spark{height:76px}
 }
+
+/* ---------- built-with strip ---------- */
+.builtwith{
+  display:flex;flex-wrap:wrap;align-items:baseline;gap:10px 26px;
+  padding:24px max(40px,calc((100% - 1120px)/2));
+  border-top:1px solid var(--line);border-bottom:1px solid var(--line);margin-top:68px;
+}
+.builtwith .lab{font:10px var(--mono);letter-spacing:.09em;text-transform:uppercase;color:var(--ink-soft);margin-right:6px}
+.builtwith ul{display:flex;flex-wrap:wrap;gap:10px 22px;list-style:none;margin:0;padding:0}
+.builtwith li{font:12px var(--mono);color:var(--ink)}
+.builtwith li span{color:var(--ink-soft)}
+@media (max-width:900px){.builtwith{padding:20px 19px;margin-top:52px;gap:8px 18px}}

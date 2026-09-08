@@ -1,8 +1,15 @@
+[![Bootstrapping the yield curve](https://omarja12.github.io/Bootstrap-Yield-Curve/social-card.png)](https://omarja12.github.io/Bootstrap-Yield-Curve/)
+
 # Bootstrap-Yield-Curve
 
 Bootstrapping the yield curve of a set of Treasury bonds three different ways, then a
-short study of five tech stocks. A Computational Finance project, written in a single
-Jupyter notebook: [`Bootstrapping_Yield_Curve.ipynb`](Bootstrapping_Yield_Curve.ipynb).
+short study of five tech stocks. Written as a single Jupyter notebook:
+[`Bootstrapping_Yield_Curve.ipynb`](Bootstrapping_Yield_Curve.ipynb).
+
+### → [Read the full write-up](https://omarja12.github.io/Bootstrap-Yield-Curve/)
+
+Five chapters covering the theory from first principles, the three bootstrapping methods,
+the rates derived from them, and the results &mdash; with an interactive curve.
 
 ---
 
@@ -78,6 +85,12 @@ Written against Python 3.9. Exercise 1 needs no network — the bond data is in 
 notebook. Exercise 2 fetches from Yahoo Finance; note that `pandas_datareader`'s Yahoo
 endpoint has changed since this was written, so that section may need adjusting to run
 today. The saved outputs in the notebook are from the original run.
+
+## The write-up
+
+The theory behind all of this &mdash; discount factors, the cash-flow matrix, why the three
+methods agree, and why forward rates fall faster than spot rates &mdash; is written up in
+full at **[omarja12.github.io/Bootstrap-Yield-Curve](https://omarja12.github.io/Bootstrap-Yield-Curve/)**.
 
 ## License
 

@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://omarja12.github.io/Bootstrap-Yield-Curve/sitemap.xml
